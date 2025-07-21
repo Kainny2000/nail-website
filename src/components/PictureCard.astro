@@ -1,8 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
 const { src, alt } = Astro.props;
-import '../styles/styles.css';
 ---
 <div class="pictureCard">
-	<Picture src={src} alt={alt} width={450} height={300} layout="constrained" />
+	<Picture src={src} alt={alt} width={550} height={350} layout="constrained" fit="cover"/>
 </div>

@@ -1,4 +1,9 @@
+---
+import Header from '../components/Header.astro';
+import PicturesGrid from '../components/PicturesGrid.astro';
 
+import '../styles/styles.css';
+---
 
 <!doctype html>
 <html lang="en">
@@ -9,7 +14,9 @@
 		<meta name="generator" content={Astro.generator} />
 		<title>Beauty SH</title>
 	</head>
+<Header></Header>
 	<body>
+		<PicturesGrid></PicturesGrid>
 		<slot />
 	</body>
 </html>
