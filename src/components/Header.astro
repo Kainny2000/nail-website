@@ -5,10 +5,12 @@ import { Image } from 'astro:assets';
 ---
 
 
-<nav class="header">
-  <div class="container">
-    <a href="/" class="logo">
-    	<Image src="/logo.jpg" alt="Beauty SH Logo" width={50} height={50} />
-  	</a>
-	</div>
-</nav>
+  <nav class="nav-bar
+  ">
+    <a href="/" class="logo-link">
+      <img src="/logo.svg" alt="Logo" width="50" height="50">
+    </a>
+    <div class="nav-center">
+      <a href="/gallery" class="gallery-link">Gallery</a>
+    </div>
+  </nav>

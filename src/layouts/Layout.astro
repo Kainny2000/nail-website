@@ -1,6 +1,5 @@
 ---
 import Header from '../components/Header.astro';
-import PicturesGrid from '../components/PicturesGrid.astro';
 
 import '../styles/styles.css';
 ---
@@ -10,13 +9,12 @@ import '../styles/styles.css';
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/svg+xml" href="/logo.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>Beauty SH</title>
 	</head>
 <Header></Header>
 	<body>
-		<PicturesGrid></PicturesGrid>
 		<slot />
 	</body>
 </html>
