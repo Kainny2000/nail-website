@@ -5,7 +5,6 @@ import '../styles/styles.css';
 interface Props {
 	backgroundImage?: string;
 }
-
 const { backgroundImage } = Astro.props;
 ---
 
@@ -19,8 +18,10 @@ const { backgroundImage } = Astro.props;
 		<title>Beauty SH</title>
 	</head>
 	<Header></Header>
-	<body class=layout style={backgroundImage ? `--bg-image: url(${backgroundImage})` : ''}></body>
-		<slot />
+	<body class="layout" style={backgroundImage ? `--bg-image: url(${backgroundImage})` : ''}>
+		<main class="content">
+			<slot />
+		</main>
 	</body>
 </html>
 

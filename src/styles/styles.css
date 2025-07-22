@@ -42,6 +42,10 @@
   margin: 0;
 }
 
+.content {
+  padding: 1rem;
+}
+
 .gallery-link {
   /*Make it so that gallery-link and the rest of the links are centered while logo link is still of the left*/
   display: inline-block;
