@@ -3,6 +3,7 @@
   --primary-color: #b308a5;
   --secondary-color: #f0f0f0;
   --shadow-color: #d8d8d8;
+  --overlay-opacity: 0.733; /* Adjusted for overlay effect */
 
 }
 .nav-bar {
@@ -32,10 +33,12 @@
 
 .layout-base, .layout-gallery, .layout-home { 
   min-height: 100vh;           /* Ensure full viewport height */
-  background-image: var(--bg-image); /* Use the variable for background image */
+  background-image: var(--bg-image);
+  background: 
+    linear-gradient(rgba(255, 255, 255, var(--overlay-opacity)), rgba(255, 255, 255, var(--overlay-opacity))),
+    var(--bg-image); /* Use the variable for background image */
   background-size: cover;      /* Makes the image cover the whole area */
   background-position: center; /* Centers the image */
-  background-image: linear-gradient(rgba(255, 255, 255, 0.733), rgba(255, 255, 255, 0.733)), var(--bg-image);
   background-repeat: no-repeat; /* Prevents tiling */
   background-attachment: fixed; /* Optional: keeps background fixed on scroll */
   margin: 0;
