@@ -3,7 +3,6 @@
   --primary-color: #b308a5;
   --secondary-color: #f0f0f0;
   --shadow-color: #d8d8d8;
-  background-color: var(--secondary-color);
 
 }
 .nav-bar {
@@ -12,7 +11,6 @@
   align-items: center;
   background-color: var(--shadow-color);
   margin-bottom: .5rem;
-  padding-top: .5rem;
 }
 
 .nav-links {
@@ -31,6 +29,17 @@
   transform: translateX(-50%);
   display: flex;
   justify-content: center;
+}
+
+.layout { 
+  min-height: 100vh;           /* Ensure full viewport height */
+  background-image: var(--bg-image); /* Use the variable for background image */
+  background-size: cover;      /* Makes the image cover the whole area */
+  background-position: center; /* Centers the image */
+  background-image: linear-gradient(rgba(255, 255, 255, 0.733), rgba(255, 255, 255, 0.733)), var(--bg-image);
+  background-repeat: no-repeat; /* Prevents tiling */
+  background-attachment: fixed; /* Optional: keeps background fixed on scroll */
+  margin: 0;
 }
 
 .gallery-link {
@@ -58,7 +67,7 @@
 
 
 .picturesGrid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-	gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
 }

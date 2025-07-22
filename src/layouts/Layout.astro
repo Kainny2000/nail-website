@@ -2,6 +2,11 @@
 import Header from '../components/Header.astro';
 
 import '../styles/styles.css';
+interface Props {
+	backgroundImage?: string;
+}
+
+const { backgroundImage } = Astro.props;
 ---
 
 <!doctype html>
@@ -13,8 +18,8 @@ import '../styles/styles.css';
 		<meta name="generator" content={Astro.generator} />
 		<title>Beauty SH</title>
 	</head>
-<Header></Header>
-	<body>
+	<Header></Header>
+	<body class=layout style={backgroundImage ? `--bg-image: url(${backgroundImage})` : ''}></body>
 		<slot />
 	</body>
 </html>
