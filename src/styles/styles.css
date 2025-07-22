@@ -11,6 +11,9 @@
   justify-content: space-between;
   align-items: center;
   background-color: var(--shadow-color);
+  position: fixed;
+  top: 0;
+  width: 100%;
 }
 
 .nav-links {
@@ -45,7 +48,7 @@
 }
 
 .content {
-  margin : 1rem;
+  margin : 4.5rem 1rem;
 
 }
 
