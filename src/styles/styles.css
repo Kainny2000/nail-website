@@ -30,7 +30,7 @@
   justify-content: center;
 }
 
-.base { 
+.base, .homeLayout, .galleryLayout { 
   min-height: 100vh;           /* Ensure full viewport height */
   background-image: var(--bg-image); /* Use the variable for background image */
   background-size: cover;      /* Makes the image cover the whole area */

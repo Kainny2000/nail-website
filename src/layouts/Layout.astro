@@ -4,8 +4,9 @@ import Header from '../components/Header.astro';
 import '../styles/styles.css';
 interface Props {
 	backgroundImage?: string;
+	className?: string;
 }
-const { backgroundImage } = Astro.props;
+const { backgroundImage, className} = Astro.props;
 ---
 
 <!doctype html>
@@ -18,7 +19,7 @@ const { backgroundImage } = Astro.props;
 		<title>Beauty SH</title>
 	</head>
 	<Header></Header>
-	<body class="base" style={backgroundImage ? `--bg-image: url(${backgroundImage})` : ''}>
+	<body class= { className ? className : "base"} style={backgroundImage ? `--bg-image: url(${backgroundImage})` : ''}>
 		<main class="content">
 			<slot />
 		</main>

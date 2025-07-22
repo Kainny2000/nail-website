@@ -6,7 +6,7 @@ import backgroundImageSrc from '../assets/Image (45).jpeg';
 const backgroundImage = await getImage({ src: backgroundImageSrc });
 ---
 
-<Layout backgroundImage={backgroundImage.src}>
+<Layout className='galleryLayout' backgroundImage={backgroundImage.src}>
     <PicturesGrid />
 </Layout>
 
