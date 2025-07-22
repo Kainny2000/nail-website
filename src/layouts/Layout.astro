@@ -18,7 +18,7 @@ const { backgroundImage } = Astro.props;
 		<title>Beauty SH</title>
 	</head>
 	<Header></Header>
-	<body class="layout" style={backgroundImage ? `--bg-image: url(${backgroundImage})` : ''}>
+	<body class="base" style={backgroundImage ? `--bg-image: url(${backgroundImage})` : ''}>
 		<main class="content">
 			<slot />
 		</main>

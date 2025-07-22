@@ -10,7 +10,6 @@
   justify-content: space-between;
   align-items: center;
   background-color: var(--shadow-color);
-  margin-bottom: .5rem;
 }
 
 .nav-links {
@@ -31,7 +30,7 @@
   justify-content: center;
 }
 
-.layout { 
+.base { 
   min-height: 100vh;           /* Ensure full viewport height */
   background-image: var(--bg-image); /* Use the variable for background image */
   background-size: cover;      /* Makes the image cover the whole area */
@@ -43,7 +42,9 @@
 }
 
 .content {
-  padding: 1rem;
+  padding:  0 1rem;
+  margin : 0;
+
 }
 
 .gallery-link {
