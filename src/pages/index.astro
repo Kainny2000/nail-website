@@ -1,12 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getImage } from 'astro:assets';
-import backgroundImageSrc from '../assets/Image (44).jpeg';
-const backgroundImage = await getImage({ src: backgroundImageSrc });
 ---
 
-<Layout className="layout-home" backgroundImage={backgroundImage.src}>
+<Layout className="layout-home" backgroundImage="/background-main.jpeg">
   <p>Welcome to Beauty SH!</p>
   <p>Explore our gallery of beautiful nail designs.</p>
-  <p>Test to see if deployment is succesful</p>
 </Layout>
