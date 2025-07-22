@@ -30,7 +30,7 @@
   justify-content: center;
 }
 
-.base { 
+.layout-base, .layout-gallery, .layout-home { 
   min-height: 100vh;           /* Ensure full viewport height */
   background-image: var(--bg-image); /* Use the variable for background image */
   background-size: cover;      /* Makes the image cover the whole area */
@@ -52,7 +52,7 @@
   text-align: center;
 }
 
-.pictureCard {
+.picture-card {
   border: 6px solid #b308a5;
   border-radius:6px;
   overflow: hidden;
@@ -62,7 +62,7 @@
   
 }
 
-.pictureCard img {
+.picture-card img {
     width: 100%;
     height: auto;
     display: block;
@@ -70,7 +70,7 @@
   }
 
 
-.picturesGrid {
+.pictures-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1rem;

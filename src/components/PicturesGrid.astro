@@ -4,7 +4,7 @@ const picturesImported = import.meta.glob('../assets/*.jpeg', { eager: true }) a
 const images = Object.values(picturesImported);
 
 ---
-<div class="picturesGrid">
+<div class="pictures-grid">
     
 	{images.map((image) => 
 		<PictureCard src={image.default} alt="A beautiful picture"></PictureCard>
