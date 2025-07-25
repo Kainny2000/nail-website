@@ -1,6 +1,6 @@
 ---
 import PictureCard from "./PictureCard.astro"
-const picturesImported = import.meta.glob('../assets/*.jpeg', { eager: true }) as Record<string, { default: any }>;
+const picturesImported = import.meta.glob('../assets/grid_images/*.jpeg', { eager: true }) as Record<string, { default: any }>;
 const images = Object.values(picturesImported);
 
 ---
