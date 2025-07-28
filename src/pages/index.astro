@@ -1,8 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import backgroundMain from '../assets/background_images/background-main.jpeg';
 ---
 
-<Layout className="layout-home" backgroundImage="/background-main.jpeg">
+<Layout className="layout-home" backgroundUrl = {`url(${backgroundMain.src})`}>
   <p>Welcome to Beauty SH!</p>
   <p>Explore our gallery of beautiful nail designs.</p>
 </Layout>

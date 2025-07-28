@@ -4,7 +4,6 @@
   --secondary-color: #f0f0f0;
   --shadow-color: #d8d8d8;
   --overlay-opacity: 0.733; /* Adjusted for overlay effect */
-
 }
 .nav-bar {
   display: flex;
@@ -14,6 +13,7 @@
   position: fixed;
   top: 0;
   width: 100%;
+  border-bottom: 4px solid var(--primary-color);
 }
 
 .nav-links {
@@ -36,7 +36,6 @@
 
 .layout-base, .layout-gallery, .layout-home { 
   min-height: 100vh;           /* Ensure full viewport height */
-  background-image: var(--bg-image);
   background: 
     linear-gradient(rgba(255, 255, 255, var(--overlay-opacity)), rgba(255, 255, 255, var(--overlay-opacity))),
     var(--bg-image); /* Use the variable for background image */
