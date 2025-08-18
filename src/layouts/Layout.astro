@@ -1,15 +1,11 @@
 ---
+import '../styles/styles.css';
 import Header from '../components/Header.astro';
 
-import '../styles/styles.css';
-interface Props {
-	backgroundImage?: string;
-	className?: string;
-}
-const { backgroundImage, className } = Astro.props;
 ---
 
 <!doctype html>
+
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
@@ -19,8 +15,8 @@ const { backgroundImage, className } = Astro.props;
 		<title>Beauty SH</title>
 	</head>
 	<Header></Header>
-	<body class={className ? className : "layout-base"} style={backgroundImage ? `--bg-image: url(${backgroundImage})` : ''}>
-		<main class="content">
+	<body class="layout">
+		<main class="content" >
 			<slot />
 		</main>
 	</body>
