@@ -9,9 +9,16 @@ export interface Service {
 export const services: Service[] = [
   {
     id: 'soft-get',
-    name: 'Uñas soft gel',
+    name: 'Uñas Soft Gel',
     description: 'Aplicación de uñas soft gel con un acabado natural y duradero.',
     min_price: 40,
-    icon: '/src/assets/icons/Nails.svg'
+    icon: '/src/assets/icons/Soft_nails.svg'
+  },
+  {
+    id: 'builder-gel',
+    name: 'Uñas Builder Gel',
+    description: 'Aplicación de uñas con builder gel para mayor resistencia y durabilidad.',
+    min_price: 40,
+    icon: '/src/assets/icons/Hard_nails.svg'
   }
 ];
