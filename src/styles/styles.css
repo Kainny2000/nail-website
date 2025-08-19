@@ -33,6 +33,13 @@
   justify-content: center;
 }
 
+.nav-center a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+}
+
 .layout { 
   min-height: 100vh;           /* Ensure full viewport height */
   margin: 3.5rem 0 0; /* Adjust for fixed navbar height */
@@ -71,4 +78,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1rem;
+}
+
+.service-card img {
+  width: 50px;
+  height: 50px;
 }
