@@ -1,0 +1,17 @@
+---
+import type {Service} from '../data/services';
+
+export interface Props extends Service {}
+
+const { name, description, min_price, icon } = Astro.props;
+---
+
+<div class="service-card">
+  <h1>{name}</h1>
+  <p>{description}</p>
+  <p>Precio desde: ${min_price}</p>
+  <img class=icon src={`${icon}`} alt={`${name} icon`} />
+
+</div>
+  
+  

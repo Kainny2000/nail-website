@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import {services} from '../data/services.ts';
+---
+<Layout>
+    <div class="services-grid">
+        {services.map(service => (
+            <ServiceCard {...service} />
+        ))}
+    </div>
+    
+</Layout>
