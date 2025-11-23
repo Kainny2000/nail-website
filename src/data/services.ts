@@ -20,5 +20,12 @@ export const services: Service[] = [
     description: 'Aplicación de uñas con builder gel para mayor resistencia y durabilidad.',
     min_price: 40,
     icon: '/icons/Hard_nails.svg'
+  },
+  {
+    id: 'poli-gel',
+    name: 'Uñas Poli Gel',
+    description: 'Aplicación de uñas poli gel con un acabado natural y duradero.',
+    min_price: 40,
+    icon: '/icons/Soft_nails.svg'
   }
 ];
