@@ -1,12 +1,145 @@
 ---
-import { Picture } from 'astro:assets';
+import { Picture } from "astro:assets";
 interface Props {
-  src: string;
+  src: any;
   alt: string;
 }
 
 const { src, alt } = Astro.props;
 ---
-<div class="picture-card">
-	<Picture src={src} alt={alt} width={550} height={350} layout="constrained" fit="cover"/>
+
+<div class="picture-card-wrapper">
+  <div class="skeleton-loader"></div>
+  <div class="picture-card" onclick="this.classList.toggle('expanded')">
+    <Picture
+      src={src}
+      alt={alt}
+      widths={[400, 800]}
+      sizes="(max-width: 800px) 100vw, 400px"
+      formats={["avif", "webp"]}
+      loading="lazy"
+      decoding="async"
+      class="gallery-image"
+    />
+    <div class="image-overlay">
+      <span class="zoom-icon">🔍</span>
+    </div>
+  </div>
 </div>
+
+<style>
+  .picture-card-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    break-inside: avoid;
+    border-radius: 1rem;
+    overflow: hidden;
+    background: #111;
+  }
+
+  .skeleton-loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    z-index: 1;
+  }
+
+  @keyframes loading {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  .picture-card {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+
+  .gallery-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.5s ease;
+  }
+
+  .picture-card:hover .gallery-image {
+    transform: scale(1.05);
+  }
+
+  .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 39, 169, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(2px);
+  }
+
+  .picture-card:hover .image-overlay {
+    opacity: 1;
+  }
+
+  .zoom-icon {
+    font-size: 2rem;
+    color: #fff;
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+  }
+
+  .picture-card:hover .zoom-icon {
+    transform: scale(1);
+  }
+
+  /* Simple Lightbox Logic */
+  .picture-card.expanded {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    cursor: zoom-out;
+  }
+
+  .picture-card.expanded .gallery-image {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+  }
+
+  .picture-card.expanded .image-overlay {
+    display: none;
+  }
+</style>

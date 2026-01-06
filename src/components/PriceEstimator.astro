@@ -1,0 +1,388 @@
+---
+import { services, categories } from "../data/services";
+---
+
+<div class="price-estimator" id="price-estimator">
+    <div class="estimator-container">
+        <div class="categories-section">
+            {
+                categories.map((category) => (
+                    <div class="category-group" data-category={category.id}>
+                        <h2 class="category-title">{category.name}</h2>
+                        <p class="category-desc">{category.description}</p>
+                        <div class="services-list">
+                            {services
+                                .filter((s) => s.category === category.id)
+                                .map((service) => (
+                                    <div
+                                        class={`service-item ${service.isAddon ? "addon-item" : "base-item"}`}
+                                        data-id={service.id}
+                                        data-price={service.price}
+                                        data-addon={
+                                            service.isAddon ? "true" : "false"
+                                        }
+                                    >
+                                        <div class="service-info">
+                                            <img
+                                                src={service.icon}
+                                                alt=""
+                                                class="service-icon"
+                                            />
+                                            <div class="service-details">
+                                                <span class="service-name">
+                                                    {service.name}
+                                                </span>
+                                                <span class="service-description">
+                                                    {service.description}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="service-action">
+                                            <span class="service-price">
+                                                ${service.price}
+                                            </span>
+                                            <button
+                                                class="select-btn"
+                                                aria-label={`Seleccionar ${service.name}`}
+                                            >
+                                                <span class="btn-icon">+</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                        </div>
+                    </div>
+                ))
+            }
+        </div>
+
+        <div class="summary-section">
+            <div class="summary-card">
+                <h3 class="summary-title">Tu Selección</h3>
+                <div id="selected-services" class="selected-services">
+                    <p class="empty-msg">
+                        No has seleccionado ningún servicio aún.
+                    </p>
+                </div>
+                <div class="summary-footer">
+                    <div class="total-row">
+                        <span>Total Estimado</span>
+                        <span id="total-price" class="total-amount">$0</span>
+                    </div>
+                    <button class="book-btn" id="book-btn" disabled>
+                        Reservar Ahora
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .price-estimator {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        color: #fff;
+        font-family: var(--font-family, "Outfit", sans-serif);
+    }
+
+    .estimator-container {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 3rem;
+        align-items: start;
+    }
+
+    @media (max-width: 968px) {
+        .estimator-container {
+            grid-template-columns: 1fr;
+        }
+        .summary-section {
+            position: sticky;
+            bottom: 1rem;
+            z-index: 10;
+        }
+    }
+
+    .category-group {
+        margin-bottom: 4rem;
+    }
+
+    .category-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .category-desc {
+        color: #888;
+        margin-bottom: 2rem;
+    }
+
+    .services-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .service-item {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .service-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-4px);
+    }
+
+    .service-item.selected {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #fff;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    .service-info {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .service-icon {
+        width: 48px;
+        height: 48px;
+        filter: invert(1);
+        opacity: 0.8;
+    }
+
+    .service-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .service-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .service-description {
+        font-size: 0.9rem;
+        color: #888;
+        line-height: 1.4;
+    }
+
+    .service-action {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+    }
+
+    .service-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .select-btn {
+        background: #fff;
+        color: #000;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .service-item.selected .select-btn {
+        background: #4caf50;
+        color: #fff;
+        transform: rotate(45deg);
+    }
+
+    .service-item.selected .btn-icon::before {
+        content: "×";
+        font-size: 1.5rem;
+    }
+
+    .service-item:not(.selected) .btn-icon::before {
+        content: "+";
+        font-size: 1.5rem;
+    }
+
+    .summary-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 2rem;
+        padding: 2rem;
+        position: sticky;
+        top: 2rem;
+    }
+
+    .summary-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 1rem;
+    }
+
+    .selected-services {
+        min-height: 100px;
+        margin-bottom: 2rem;
+    }
+
+    .selected-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .empty-msg {
+        color: #666;
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .summary-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 1.5rem;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .total-amount {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #fff;
+    }
+
+    .book-btn {
+        width: 100%;
+        padding: 1.25rem;
+        border-radius: 1rem;
+        border: none;
+        background: #fff;
+        color: #000;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .book-btn:hover:not(:disabled) {
+        background: #eee;
+        transform: scale(1.02);
+    }
+
+    .book-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+
+<script>
+    const estimator = document.getElementById("price-estimator");
+    const serviceItems = document.querySelectorAll(".service-item");
+    const selectedList = document.getElementById("selected-services");
+    const totalPriceEl = document.getElementById("total-price");
+    const bookBtn = document.getElementById("book-btn");
+
+    let selectedServices = new Map();
+
+    function updateUI() {
+        // Update selected list
+        if (selectedServices.size === 0) {
+            selectedList.innerHTML =
+                '<p class="empty-msg">No has seleccionado ningún servicio aún.</p>';
+            bookBtn.disabled = true;
+        } else {
+            selectedList.innerHTML = "";
+            let total = 0;
+            selectedServices.forEach((service, id) => {
+                const item = document.createElement("div");
+                item.className = "selected-item";
+                item.innerHTML = `
+          <span>${service.name}</span>
+          <span>$${service.price}</span>
+        `;
+                selectedList.appendChild(item);
+                total += service.price;
+            });
+            totalPriceEl.textContent = `$${total}`;
+            bookBtn.disabled = false;
+        }
+
+        // Update item states
+        serviceItems.forEach((item) => {
+            const id = item.dataset.id;
+            if (selectedServices.has(id)) {
+                item.classList.add("selected");
+            } else {
+                item.classList.remove("selected");
+            }
+        });
+    }
+
+    serviceItems.forEach((item) => {
+        item.addEventListener("click", () => {
+            const id = item.dataset.id;
+            const name = item.querySelector(".service-name").textContent;
+            const price = parseInt(item.dataset.price);
+            const isAddon = item.dataset.addon === "true";
+
+            if (selectedServices.has(id)) {
+                selectedServices.delete(id);
+            } else {
+                // If it's a base service (not an addon), we might want to limit to one per category
+                // For now, let's just allow multiple but maybe clear others in same category if they are mutually exclusive
+                // For this UI, let's keep it simple: toggle everything.
+                selectedServices.set(id, { name, price });
+            }
+            updateUI();
+        });
+    });
+
+    bookBtn.addEventListener("click", () => {
+        if (!bookBtn.disabled) {
+            window.open("https://www.instagram.com/bareform.bysh", "_blank");
+        }
+    });
+</script>

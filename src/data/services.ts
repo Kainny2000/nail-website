@@ -2,128 +2,147 @@ export interface Service {
   id: string;
   name: string;
   description: string;
-  min_price: number;
+  price: number;
   icon: string;
+  category: string;
+  isAddon?: boolean;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export const categories: Category[] = [
+  { id: 'nails', name: 'Uñas', description: 'Servicios principales de uñas' },
+  { id: 'pedicure', name: 'Pedicura', description: 'Cuidado para tus pies' },
+  { id: 'brows-lashes', name: 'Cejas y Pestañas', description: 'Mirada perfecta' },
+  { id: 'removal', name: 'Retirado', description: 'Servicios de remoción' },
+  { id: 'addons', name: 'Extras', description: 'Complementos para tus servicios' },
+];
+
 export const services: Service[] = [
+  // Uñas
   {
     id: 'soft-gel',
     name: 'Uñas Soft Gel',
-    description: 'Aplicación de uñas soft gel con un acabado natural y duradero.',
-    min_price: 40,
+    description: 'Acabado natural y duradero.',
+    price: 40,
     icon: '/icons/Soft_nails.svg',
+    category: 'nails',
   },
   {
     id: 'builder-gel',
     name: 'Uñas Builder Gel',
-    description: 'Aplicación de uñas con builder gel para mayor resistencia y durabilidad.',
-    min_price: 40,
+    description: 'Mayor resistencia y durabilidad.',
+    price: 40,
     icon: '/icons/Hard_nails.svg',
+    category: 'nails',
   },
   {
     id: 'poligel',
     name: 'Poligel',
-    description: 'Aplicación de uñas poli gel con un acabado natural y duradero.',
-    min_price: 45,
+    description: 'Acabado natural y duradero.',
+    price: 45,
     icon: '/icons/Soft_nails.svg',
-  },
-  {
-    id: 'manicure-combinada',
-    name: 'Manicura combinada incluido (limpieza)',
-    description: 'Manicura combinada que incluye limpieza.',
-    min_price: 0,
-    icon: '/icons/Manicure.svg',
-  },
-  {
-    id: 'removal',
-    name: 'Retirado',
-    description: 'Servicio de retirado de uñas.',
-    min_price: 0,
-    icon: '/icons/Removal.svg',
-  },
-  {
-    id: 'koki-previo-gratis',
-    name: 'Gratis si es trabajo previo de Koki',
-    description: 'Servicio gratuito cuando es trabajo previo de Koki.',
-    min_price: 0,
-    icon: '/icons/Discount.svg',
-  },
-  {
-    id: 'externo-5',
-    name: '5 si es externo',
-    description: 'Servicio con precio de 5 para clientes externos.',
-    min_price: 5,
-    icon: '/icons/External.svg',
-  },
-  {
-    id: 'remover-sin-extra-15',
-    name: '15 solo remover sin servicio extra',
-    description: 'Remoción sin servicios adicionales.',
-    min_price: 15,
-    icon: '/icons/Removal.svg',
+    category: 'nails',
   },
   {
     id: 'nivelacion-builder',
     name: 'Nivelación con Builder Gel',
     description: 'Nivelación de uñas usando builder gel.',
-    min_price: 40,
+    price: 40,
     icon: '/icons/Hard_nails.svg',
-  },
-  {
-    id: 'nivelacion-builder-color',
-    name: 'Más color +$5',
-    description: 'Añadir color adicional por 5 extra.',
-    min_price: 45,
-    icon: '/icons/Color.svg',
+    category: 'nails',
   },
   {
     id: 'nivelacion-rubber',
     name: 'Nivelación con Rubber Base',
     description: 'Nivelación de uñas usando rubber base.',
-    min_price: 40,
+    price: 40,
     icon: '/icons/Rubber.svg',
+    category: 'nails',
   },
-  {
-    id: 'nivelacion-rubber-color',
-    name: 'Más color +$5',
-    description: 'Añadir color adicional por 5 extra.',
-    min_price: 45,
-    icon: '/icons/Color.svg',
-  },
+
+  // Pedicura
   {
     id: 'pedicura-estetica',
     name: 'Pedicura Estética',
-    description: 'Pedicura estética para embellecer los pies.',
-    min_price: 45,
+    description: 'Embellece tus pies.',
+    price: 45,
     icon: '/icons/Pedicure.svg',
+    category: 'pedicure',
   },
   {
     id: 'pedicura-spa',
     name: 'Pedicura Spa',
-    description: 'Pedicura tipo spa con tratamientos relajantes.',
-    min_price: 50,
+    description: 'Tratamientos relajantes.',
+    price: 50,
     icon: '/icons/Pedicure.svg',
+    category: 'pedicure',
   },
+
+  // Cejas y Pestañas
   {
     id: 'brow-lamination',
     name: 'Brow Lamination',
-    description: 'Laminado de cejas para mayor definición.',
-    min_price: 45,
+    description: 'Mayor definición para tus cejas.',
+    price: 45,
     icon: '/icons/Brow.svg',
+    category: 'brows-lashes',
   },
   {
     id: 'lash-lifting',
     name: 'Lash Lifting',
-    description: 'Elevación de pestañas para un look más abierto.',
-    min_price: 45,
+    description: 'Elevación de pestañas.',
+    price: 45,
     icon: '/icons/Lash.svg',
+    category: 'brows-lashes',
   },
   {
     id: 'henna-brows',
     name: 'Henna Brows',
     description: 'Aplicación de henna en las cejas.',
-    min_price: 35,
+    price: 35,
     icon: '/icons/Brow.svg',
+    category: 'brows-lashes',
+  },
+
+  // Retirado
+  {
+    id: 'removal-koki',
+    name: 'Retirado (Koki)',
+    description: 'Gratis si es trabajo previo de Koki.',
+    price: 0,
+    icon: '/icons/Discount.svg',
+    category: 'removal',
+  },
+  {
+    id: 'removal-external',
+    name: 'Retirado Externo',
+    description: 'Si el trabajo previo es de otro lugar.',
+    price: 5,
+    icon: '/icons/External.svg',
+    category: 'removal',
+  },
+  {
+    id: 'removal-only',
+    name: 'Solo Retirado',
+    description: 'Sin servicio extra.',
+    price: 15,
+    icon: '/icons/Removal.svg',
+    category: 'removal',
+  },
+
+  // Extras
+  {
+    id: 'extra-color',
+    name: 'Color Adicional',
+    description: 'Añade color a tu nivelación.',
+    price: 5,
+    icon: '/icons/Color.svg',
+    category: 'addons',
+    isAddon: true,
   },
 ];

@@ -1,13 +1,54 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import ServiceCard from '../components/ServiceCard.astro';
-import {services} from '../data/services.ts';
+import Layout from "../layouts/Layout.astro";
+import PriceEstimator from "../components/PriceEstimator.astro";
 ---
-<Layout>
-    <div class="services-grid">
-        {services.map(service => (
-            <ServiceCard {...service} />
-        ))}
-    </div>
-    
+
+<Layout title="Servicios | Estimador de Precios">
+    <main class="services-page">
+        <header class="services-header">
+            <h1>Nuestros Servicios</h1>
+            <p>
+                Selecciona los servicios que deseas para obtener un presupuesto
+                personalizado.
+            </p>
+        </header>
+
+        <PriceEstimator />
+    </main>
 </Layout>
+
+<style>
+    .services-page {
+        padding-top: 8rem;
+        min-height: 100vh;
+        background: #000;
+    }
+
+    .services-header {
+        text-align: center;
+        margin-bottom: 4rem;
+        padding: 0 2rem;
+    }
+
+    .services-header h1 {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: linear-gradient(to bottom, #fff, #666);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .services-header p {
+        font-size: 1.2rem;
+        color: #888;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+        .services-header h1 {
+            font-size: 2.5rem;
+        }
+    }
+</style>

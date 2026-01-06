@@ -1,0 +1,73 @@
+---
+
+---
+
+<footer class="site-footer">
+    <div class="footer-content">
+        <div class="footer-info">
+            <div class="info-item">
+                <span class="icon">📍</span>
+                <span class="text">Orem, UT</span>
+            </div>
+            <div class="info-item disclaimers">
+                <span class="text">✖ Acrylic • ✖ Mobile service</span>
+            </div>
+        </div>
+        <div class="footer-brand">
+            <p>
+                &copy; {new Date().getFullYear()} Bare Form by sh. Todos los derechos
+                reservados.
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .site-footer {
+        background: #000;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 4rem 2rem;
+        margin-top: 4rem;
+        color: #888;
+    }
+
+    .footer-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .footer-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+        color: #fff;
+    }
+
+    .disclaimers {
+        color: #ff4d4d;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .footer-brand {
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .site-footer {
+            padding: 3rem 1rem;
+        }
+    }
+</style>
