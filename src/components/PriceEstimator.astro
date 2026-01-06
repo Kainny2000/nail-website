@@ -92,17 +92,7 @@ import { services, categories } from "../data/services";
         grid-template-columns: 1fr 350px;
         gap: 3rem;
         align-items: start;
-    }
-
-    @media (max-width: 968px) {
-        .estimator-container {
-            grid-template-columns: 1fr;
-        }
-        .summary-section {
-            position: sticky;
-            bottom: 1rem;
-            z-index: 10;
-        }
+        position: relative;
     }
 
     .category-group {
@@ -143,10 +133,13 @@ import { services, categories } from "../data/services";
         overflow: hidden;
     }
 
-    .service-item:hover {
-        background: rgba(255, 255, 255, 0.06);
-        border-color: rgba(255, 255, 255, 0.2);
-        transform: translateY(-4px);
+    /* Hover effects only for devices that support hover */
+    @media (hover: hover) {
+        .service-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px);
+        }
     }
 
     .service-item.selected {
@@ -235,6 +228,7 @@ import { services, categories } from "../data/services";
         padding: 2rem;
         position: sticky;
         top: 2rem;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .summary-title {
@@ -248,6 +242,8 @@ import { services, categories } from "../data/services";
     .selected-services {
         min-height: 100px;
         margin-bottom: 2rem;
+        max-height: 400px;
+        overflow-y: auto;
     }
 
     .selected-item {
@@ -316,18 +312,114 @@ import { services, categories } from "../data/services";
         opacity: 0.5;
         cursor: not-allowed;
     }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 968px) {
+        .price-estimator {
+            padding: 1rem;
+        }
+
+        .estimator-container {
+            grid-template-columns: 1fr;
+            padding-bottom: 120px; /* Space for fixed summary */
+        }
+
+        .services-list {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .service-item {
+            padding: 1.25rem;
+        }
+
+        .summary-section {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            z-index: 100;
+            pointer-events: none; /* Allow clicks to pass through around the card */
+            display: flex;
+            justify-content: center;
+        }
+
+        .summary-card {
+            pointer-events: auto;
+            width: 100%;
+            max-width: 500px;
+            padding: 1rem 1.5rem;
+            border-radius: 1.5rem;
+            background: rgba(10, 10, 10, 0.95);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Compact Layout for Mobile Summary */
+        .summary-title,
+        .selected-services,
+        .empty-msg {
+            display: none; /* Hide details by default on mobile */
+        }
+
+        /* When we want to show details (optional future feature), we could toggle a class */
+        .summary-card.expanded .selected-services {
+            display: block;
+        }
+
+        .summary-footer {
+            border-top: none;
+            padding-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        .total-row {
+            margin-bottom: 0;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+        }
+
+        .total-row span:first-child {
+            font-size: 0.8rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .total-amount {
+            font-size: 1.5rem;
+        }
+
+        .book-btn {
+            padding: 0.8rem 1.5rem;
+            width: auto;
+            min-width: 140px;
+            font-size: 1rem;
+        }
+    }
 </style>
 
 <script>
     const estimator = document.getElementById("price-estimator");
-    const serviceItems = document.querySelectorAll(".service-item");
+    const serviceItems =
+        document.querySelectorAll<HTMLElement>(".service-item");
     const selectedList = document.getElementById("selected-services");
     const totalPriceEl = document.getElementById("total-price");
-    const bookBtn = document.getElementById("book-btn");
+    const bookBtn = document.getElementById(
+        "book-btn",
+    ) as HTMLButtonElement | null;
 
     let selectedServices = new Map();
 
     function updateUI() {
+        if (!selectedList || !bookBtn || !totalPriceEl) return;
+
         // Update selected list
         if (selectedServices.size === 0) {
             selectedList.innerHTML =
@@ -353,7 +445,7 @@ import { services, categories } from "../data/services";
         // Update item states
         serviceItems.forEach((item) => {
             const id = item.dataset.id;
-            if (selectedServices.has(id)) {
+            if (id && selectedServices.has(id)) {
                 item.classList.add("selected");
             } else {
                 item.classList.remove("selected");
@@ -364,25 +456,31 @@ import { services, categories } from "../data/services";
     serviceItems.forEach((item) => {
         item.addEventListener("click", () => {
             const id = item.dataset.id;
-            const name = item.querySelector(".service-name").textContent;
-            const price = parseInt(item.dataset.price);
-            const isAddon = item.dataset.addon === "true";
+            const nameEl = item.querySelector(".service-name");
+            const priceStr = item.dataset.price;
+
+            if (!id || !nameEl || !priceStr) return;
+
+            const name = nameEl.textContent || "";
+            const price = parseInt(priceStr);
 
             if (selectedServices.has(id)) {
                 selectedServices.delete(id);
             } else {
-                // If it's a base service (not an addon), we might want to limit to one per category
-                // For now, let's just allow multiple but maybe clear others in same category if they are mutually exclusive
-                // For this UI, let's keep it simple: toggle everything.
                 selectedServices.set(id, { name, price });
             }
             updateUI();
         });
     });
 
-    bookBtn.addEventListener("click", () => {
-        if (!bookBtn.disabled) {
-            window.open("https://www.instagram.com/bareform.bysh", "_blank");
-        }
-    });
+    if (bookBtn) {
+        bookBtn.addEventListener("click", () => {
+            if (!bookBtn.disabled) {
+                window.open(
+                    "https://www.instagram.com/bareform.bysh",
+                    "_blank",
+                );
+            }
+        });
+    }
 </script>
