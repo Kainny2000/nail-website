@@ -1,12 +1,49 @@
 ---
-import PictureCard from "./PictureCard.astro"
-const picturesImported = import.meta.glob('../assets/grid_gallery/*.jpeg', { eager: true }) as Record<string, { default: any }>;
+import PictureCard from "./PictureCard.astro";
+const picturesImported = import.meta.glob("../assets/grid_gallery/*.jpeg", {
+	eager: true,
+}) as Record<string, { default: any }>;
 const images = Object.values(picturesImported);
-
 ---
-<div class="pictures-grid">
-    
-	{images.map((image) => 
-		<PictureCard src={image.default} alt="A beautiful picture"></PictureCard>
-	)}
+
+<div class="gallery-wrapper">
+	<div class="pictures-grid">
+		{
+			images.map((image) => (
+				<PictureCard src={image.default} alt="Bare Form Nail Art" />
+			))
+		}
+	</div>
 </div>
+
+<style>
+	.gallery-wrapper {
+		padding: 2rem;
+		max-width: 1400px;
+		margin: 0 auto;
+	}
+
+	.pictures-grid {
+		column-count: 4;
+		column-gap: 1.5rem;
+		width: 100%;
+	}
+
+	@media (max-width: 1200px) {
+		.pictures-grid {
+			column-count: 3;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.pictures-grid {
+			column-count: 2;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.pictures-grid {
+			column-count: 1;
+		}
+	}
+</style>
