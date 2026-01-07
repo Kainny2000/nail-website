@@ -1,9 +1,8 @@
-/* add primary color pink/violet */
 :root {
-  --primary-color: #ff27a9;
-  --secondary-color: #a00160;
-  --shadow-color: #ffb3e0;
-  --overlay-opacity: 0.733;
+  --primary-color: #ffffff;
+  --secondary-color: #ffffff;
+  --shadow-color: rgba(255, 255, 255, 0.2);
+  --overlay-opacity: 0.8;
   /* Adjusted for overlay effect */
   --font-family: 'Outfit', system-ui, -apple-system, sans-serif;
 }
@@ -24,11 +23,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--primary-color);
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   position: fixed;
   top: 0;
   width: 100%;
-  border-bottom: 4px solid var(--secondary-color);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   z-index: 1000;
 }
 
@@ -48,6 +49,11 @@ body {
   /* Add some padding */
 }
 
+/* Make logo black */
+.logo-link img {
+  filter: brightness(0);
+}
+
 .nav-center {
   position: absolute;
   left: 50%;
@@ -57,7 +63,7 @@ body {
 }
 
 .nav-center a {
-  color: white;
+  color: #000;
   text-decoration: none;
   font-weight: bold;
   padding: 0.5rem 1rem;
