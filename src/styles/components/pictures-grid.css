@@ -1,0 +1,29 @@
+.gallery-wrapper {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.pictures-grid {
+    column-count: 4;
+    column-gap: 1.5rem;
+    width: 100%;
+}
+
+@media (max-width: 1200px) {
+    .pictures-grid {
+        column-count: 3;
+    }
+}
+
+@media (max-width: 768px) {
+    .pictures-grid {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 480px) {
+    .pictures-grid {
+        column-count: 1;
+    }
+}
