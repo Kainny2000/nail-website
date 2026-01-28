@@ -5,7 +5,12 @@ import "../styles/components/home-slideshow.css";
 const picturesImported = import.meta.glob("../assets/grid_gallery/*.jpeg", {
     eager: true,
 }) as Record<string, { default: any }>;
-const images = Object.values(picturesImported).slice(0, 5); // Take first 5 for the slideshow
+
+const sortedKeys = Object.keys(picturesImported).sort((a, b) =>
+    a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }),
+);
+
+const images = sortedKeys.slice(0, 5).map((key) => picturesImported[key]);
 ---
 
 <div class="home-slideshow">
