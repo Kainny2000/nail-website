@@ -4,7 +4,23 @@ import "../styles/components/pictures-grid.css";
 const picturesImported = import.meta.glob("../assets/grid_gallery/*.jpeg", {
 	eager: true,
 }) as Record<string, { default: any }>;
-const images = Object.values(picturesImported);
+const sortedKeys = Object.keys(picturesImported).sort((a, b) => {
+	const numA = parseInt(a.match(/\((\d+)\)/)?.[1] || "0");
+	const numB = parseInt(b.match(/\((\d+)\)/)?.[1] || "0");
+	return numA - numB;
+});
+
+const uniqueImages = [];
+const seenSources = new Set();
+
+for (const key of sortedKeys) {
+	const img = picturesImported[key];
+	if (!seenSources.has(img.default.src)) {
+		seenSources.add(img.default.src);
+		uniqueImages.push(img);
+	}
+}
+const images = uniqueImages;
 ---
 
 <div class="gallery-wrapper">
