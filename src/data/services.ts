@@ -6,6 +6,7 @@ export interface Service {
   icon: string;
   category: string;
   isAddon?: boolean;
+  basePrice?: boolean;
 }
 
 export interface Category {
@@ -16,10 +17,7 @@ export interface Category {
 
 export const categories: Category[] = [
   { id: 'nails', name: 'Uñas', description: 'Servicios principales de uñas' },
-  { id: 'pedicure', name: 'Pedicura', description: 'Cuidado para tus pies' },
-  { id: 'brows-lashes', name: 'Cejas y Pestañas', description: 'Mirada perfecta' },
   { id: 'removal', name: 'Retirado', description: 'Servicios de remoción' },
-  { id: 'addons', name: 'Extras', description: 'Complementos para tus servicios' },
 ];
 
 export const services: Service[] = [
@@ -75,32 +73,6 @@ export const services: Service[] = [
     category: 'pedicure',
   },
 
-  // Cejas y Pestañas
-  {
-    id: 'brow-lamination',
-    name: 'Brow Lamination',
-    description: 'Mayor definición para tus cejas.',
-    price: 45,
-    icon: '/icons/Brow.svg',
-    category: 'brows-lashes',
-  },
-  {
-    id: 'lash-lifting',
-    name: 'Lash Lifting',
-    description: 'Elevación de pestañas.',
-    price: 45,
-    icon: '/icons/Lash.svg',
-    category: 'brows-lashes',
-  },
-  {
-    id: 'henna-brows',
-    name: 'Henna Brows',
-    description: 'Aplicación de henna en las cejas.',
-    price: 35,
-    icon: '/icons/Brow.svg',
-    category: 'brows-lashes',
-  },
-
   // Retirado
   {
     id: 'removal-koki',
@@ -125,16 +97,5 @@ export const services: Service[] = [
     price: 15,
     icon: '/icons/Removal.svg',
     category: 'removal',
-  },
-
-  // Extras
-  {
-    id: 'extra-color',
-    name: 'Color Adicional',
-    description: 'Añade máscolor y diseño a tu nivelación.',
-    price: 5,
-    icon: '/icons/Color.svg',
-    category: 'addons',
-    isAddon: true,
   },
 ];
