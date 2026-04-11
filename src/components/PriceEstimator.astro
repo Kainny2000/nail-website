@@ -19,6 +19,7 @@ import "../styles/components/price-estimator.css";
                                         class={`service-item ${service.isAddon ? "addon-item" : "base-item"}`}
                                         data-id={service.id}
                                         data-price={service.price}
+                                        data-category={service.category}
                                         data-addon={
                                             service.isAddon ? "true" : "false"
                                         }
@@ -40,7 +41,7 @@ import "../styles/components/price-estimator.css";
                                         </div>
                                         <div class="service-action">
                                             <span class="service-price">
-                                                ${service.price}
+                                                ${service.price}{service.category === 'nails' ? '+' : ''}
                                             </span>
                                             <button
                                                 class="select-btn"
@@ -105,17 +106,19 @@ import "../styles/components/price-estimator.css";
         } else {
             selectedList.innerHTML = "";
             let total = 0;
+            let hasNails = false;
             selectedServices.forEach((service, id) => {
+                if (service.category === 'nails') hasNails = true;
                 const item = document.createElement("div");
                 item.className = "selected-item";
                 item.innerHTML = `
           <span>${service.name}</span>
-          <span>$${service.price}</span>
+          <span>$${service.price}${service.category === 'nails' ? '+' : ''}</span>
         `;
                 selectedList.appendChild(item);
                 total += service.price;
             });
-            totalPriceEl.textContent = `$${total}`;
+            totalPriceEl.textContent = `$${total}${hasNails ? '+' : ''}`;
             bookBtn.disabled = false;
         }
 
@@ -135,6 +138,7 @@ import "../styles/components/price-estimator.css";
             const id = item.dataset.id;
             const nameEl = item.querySelector(".service-name");
             const priceStr = item.dataset.price;
+            const category = item.dataset.category;
 
             if (!id || !nameEl || !priceStr) return;
 
@@ -144,7 +148,7 @@ import "../styles/components/price-estimator.css";
             if (selectedServices.has(id)) {
                 selectedServices.delete(id);
             } else {
-                selectedServices.set(id, { name, price });
+                selectedServices.set(id, { name, price, category });
             }
             updateUI();
         });
@@ -154,11 +158,13 @@ import "../styles/components/price-estimator.css";
         bookBtn.addEventListener("click", () => {
             if (!bookBtn.disabled) {
                 let message = "Hola, me gustaría reservar una cita. Mis servicios seleccionados son:\n\n";
+                let hasNails = false;
                 selectedServices.forEach((service) => {
-                    message += `- ${service.name}: $${service.price}\n`;
+                    if (service.category === 'nails') hasNails = true;
+                    message += `- ${service.name}: $${service.price}${service.category === 'nails' ? '+' : ''}\n`;
                 });
                 const total = Array.from(selectedServices.values()).reduce((sum, s) => sum + s.price, 0);
-                message += `\nTotal estimado: $${total}`;
+                message += `\nTotal estimado: $${total}${hasNails ? '+' : ''}`;
                 
                 const encodedMessage = encodeURIComponent(message);
                 window.open(
