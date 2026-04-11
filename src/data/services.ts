@@ -18,6 +18,7 @@ export interface Category {
 export const categories: Category[] = [
   { id: 'nails', name: 'Uñas', description: 'Servicios principales de uñas' },
   { id: 'removal', name: 'Retirado', description: 'Servicios de remoción' },
+  { id: 'pedicure', name: 'Pedicuras', description: 'Servicios de pedicura' },
 ];
 
 export const services: Service[] = [
@@ -39,8 +40,8 @@ export const services: Service[] = [
     category: 'nails',
   },
   {
-    id: 'poligel',
-    name: 'Poligel',
+    id: 'polygel',
+    name: 'Polygel',
     description: 'Acabado natural y duradero.',
     price: 50,
     icon: '/icons/Soft_nails.svg',
@@ -55,28 +56,10 @@ export const services: Service[] = [
     category: 'nails',
   },
 
-  // Pedicura
-  {
-    id: 'pedicura-estetica',
-    name: 'Pedicura Estética',
-    description: 'Embellece tus pies.',
-    price: 45,
-    icon: '/icons/Pedicure.svg',
-    category: 'pedicure',
-  },
-  {
-    id: 'pedicura-spa',
-    name: 'Pedicura Spa',
-    description: 'Tratamientos relajantes.',
-    price: 50,
-    icon: '/icons/Pedicure.svg',
-    category: 'pedicure',
-  },
-
   // Retirado
   {
     id: 'removal-koki',
-    name: 'Retirado (Koki)',
+    name: 'Retirado (trabajo previo de Bareform)',
     description: 'Gratis si es trabajo previo de Koki.',
     price: 0,
     icon: '/icons/Discount.svg',
@@ -98,4 +81,22 @@ export const services: Service[] = [
     icon: '/icons/Removal.svg',
     category: 'removal',
   },
+  // Pedicura
+  {
+    id: 'pedicura-estetica',
+    name: 'Pedicura Estética',
+    description: 'Embellece tus pies.',
+    price: 45,
+    icon: '/icons/Pedicure.svg',
+    category: 'pedicure',
+  },
+  {
+    id: 'pedicura-spa',
+    name: 'Pedicura Spa',
+    description: 'Tratamientos relajantes.',
+    price: 50,
+    icon: '/icons/Pedicure.svg',
+    category: 'pedicure',
+  },
+
 ];
