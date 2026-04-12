@@ -26,7 +26,7 @@ export const services: Service[] = [
   {
     id: 'soft-gel',
     name: 'Uñas Soft Gel',
-    description: 'Acabado natural y duradero.',
+    description: 'Uñas ligeras, naturales y resistentes con acabado brillante. El sistema de soft gel utiliza tips flexibles que se adhieren sin dañar tu uña, brindando comodidad y durabilidad de 2 a 3 semanas.',
     price: 55,
     icon: '/icons/Hard_nails.svg',
     category: 'nails',
@@ -34,7 +34,7 @@ export const services: Service[] = [
   {
     id: 'builder-rubber-gel',
     name: 'Nivelación con Rubber o Builder Gel',
-    description: 'Mayor resistencia y durabilidad.',
+    description: 'Refuerza y nivela la uña natural, corrigiendo imperfecciones para un acabado liso y resistente. El rubber o builder gel aporta flexibilidad y mayor durabilidad, ayudando a evitar quiebres.',
     price: 50,
     icon: '/icons/Hard_nails.svg',
     category: 'nails',
@@ -42,7 +42,7 @@ export const services: Service[] = [
   {
     id: 'polygel',
     name: 'Polygel',
-    description: 'Acabado natural y duradero.',
+    description: 'Sistema híbrido que combina la resistencia del acrílico con la ligereza del gel. Permite crear extensiones fuertes, ligeras y con acabado natural. Ideal para uñas duraderas, cómodas y con forma personalizada sin sensación pesada.',
     price: 60,
     icon: '/icons/Hard_nails.svg',
     category: 'nails',
@@ -51,24 +51,24 @@ export const services: Service[] = [
   // Retirado
   {
     id: 'removal-koki',
-    name: 'Retirado (trabajo previo de Bareform)',
-    description: 'Gratis si es trabajo previo de Koki.',
+    name: 'Remoción de Diseño (Trabajo Propio)',
+    description: 'Retiro seguro del diseño anterior realizado por Barefore, cuidando la estructura de la uña para mantener su salud. Preparación ideal para un nuevo servicio sin daños ni desgaste innecesario.',
     price: 0,
     icon: '/icons/File_nails.svg',
     category: 'removal',
   },
   {
     id: 'removal-external',
-    name: 'Retirado Externo',
-    description: 'Si retirado es de trabajo previo de otro lugar.',
+    name: 'Remoción de Diseño (Trabajo Externo)',
+    description: 'Retiro cuidadoso de producto realizado por otro salón, evaluando la estructura de la uña para evitar daños. Preparación segura para aplicar un nuevo servicio con mejor adherencia y acabado.',
     price: 5,
     icon: '/icons/File_nails.svg',
     category: 'removal',
   },
   {
     id: 'removal-only',
-    name: 'Solo Retirado',
-    description: 'Retirado sin servicio extra.',
+    name: 'Retiro de Producto',
+    description: 'Eliminación segura del gel, acrílico o polygel sin aplicar nuevo servicio. Se realiza cuidadosamente para proteger la uña natural y mantener su salud. Ideal si deseas descansar tus uñas o retirar el producto actual.',
     price: 30,
     icon: '/icons/File_nails.svg',
     category: 'removal',
@@ -77,7 +77,7 @@ export const services: Service[] = [
   {
     id: 'pedicura-estetica',
     name: 'Pedicura Estética',
-    description: 'Embellece tus pies.',
+    description: 'Limpieza, corte y cuidado básico de uñas y cutícula, con exfoliación e hidratación. Ideal para mantener tus pies limpios, suaves y con apariencia saludable.',
     price: 45,
     icon: '/icons/Pedicure.svg',
     category: 'pedicure',
@@ -85,7 +85,7 @@ export const services: Service[] = [
   {
     id: 'pedicura-spa',
     name: 'Pedicura Spa',
-    description: 'Tratamientos relajantes.',
+    description: 'Tratamiento completo que combina limpieza, exfoliación e hidratación profunda para relajar y revitalizar tus pies.',
     price: 50,
     icon: '/icons/Pedicure.svg',
     category: 'pedicure',

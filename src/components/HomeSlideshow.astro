@@ -1,16 +1,15 @@
 ---
 import { Image } from "astro:assets";
 import "../styles/components/home-slideshow.css";
+import favoriteSlideshow from "../data/favorite-slideshow.json";
 
 const picturesImported = import.meta.glob("../assets/grid_gallery/*.jpeg", {
     eager: true,
 }) as Record<string, { default: any }>;
 
-const sortedKeys = Object.keys(picturesImported).sort((a, b) =>
-    a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }),
-);
-
-const images = sortedKeys.slice(0, 5).map((key) => picturesImported[key]);
+const images = favoriteSlideshow
+    .map((fileName) => picturesImported[`../assets/grid_gallery/${fileName}`])
+    .filter((image) => image !== undefined);
 ---
 
 <div class="home-slideshow">
