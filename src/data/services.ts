@@ -52,7 +52,7 @@ export const services: Service[] = [
   {
     id: 'removal-koki',
     name: 'Remoción de Diseño (Trabajo Propio)',
-    description: 'Retiro seguro del diseño anterior realizado por Barefore, cuidando la estructura de la uña para mantener su salud. Preparación ideal para un nuevo servicio sin daños ni desgaste innecesario.',
+    description: 'Retiro seguro del diseño anterior realizado por Bare Form, cuidando la estructura de la uña para mantener su salud. Preparación ideal para un nuevo servicio sin daños ni desgaste innecesario.',
     price: 0,
     icon: '/icons/File_nails.svg',
     category: 'removal',
