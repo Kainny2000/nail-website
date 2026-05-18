@@ -1,0 +1,19 @@
+---
+import type { PressOnPackage } from "../data/press-on";
+import "../styles/components/press-on-card.css";
+
+interface Props extends PressOnPackage {}
+
+const { name, description } = Astro.props;
+---
+
+<div class="press-on-card">
+  <div class="press-on-card-image">
+    <div class="press-on-card-placeholder">Diseño</div>
+    <div class="press-on-card-sample">Muestra</div>
+  </div>
+  <div class="press-on-card-body">
+    <h2 class="press-on-card-title">{name}</h2>
+    <p class="press-on-card-desc">{description}</p>
+  </div>
+</div>
