@@ -1,0 +1,35 @@
+.on-the-works {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 600px;
+  margin: 2rem auto 3rem;
+  padding: 1.25rem 1.5rem;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 1rem;
+}
+
+.on-the-works-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.on-the-works-content {
+  flex: 1;
+}
+
+.on-the-works-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.on-the-works-text {
+  font-size: 0.85rem;
+  color: #888;
+  line-height: 1.5;
+  margin: 0;
+}

@@ -1,0 +1,17 @@
+---
+import PressOnCard from "./PressOnCard.astro";
+import { pressOnPackages } from "../data/press-on";
+import "../styles/components/press-on-card.css";
+---
+
+<div class="press-on-wrapper">
+  <div class="press-on-grid">
+    {pressOnPackages.map((pkg) => (
+      <PressOnCard
+        id={pkg.id}
+        name={pkg.name}
+        description={pkg.description}
+      />
+    ))}
+  </div>
+</div>
