@@ -1,0 +1,1353 @@
+---
+import Layout from "../layouts/Layout.astro";
+import galleryImages from "../data/gallery-images.json";
+import favoriteSlideshow from "../data/favorite-slideshow.json";
+
+// Import all images to display thumbnails
+const picturesImported = import.meta.glob("../assets/grid_gallery/*.jpeg", {
+    eager: true,
+}) as Record<string, { default: any }>;
+
+// Map to get filename and source
+const allImages = Object.keys(picturesImported).map((key) => {
+    const fileName = key.split("/").pop() || "";
+    return {
+        fileName,
+        src: picturesImported[key].default.src,
+    };
+}).sort((a, b) => {
+    const numA = parseInt(a.fileName.match(/\((\d+)\)/)?.[1] || "0");
+    const numB = parseInt(b.fileName.match(/\((\d+)\)/)?.[1] || "0");
+    return numA - numB;
+});
+
+// Determine environment
+const isDev = import.meta.env.DEV;
+---
+
+<Layout title="Admin Manager | Bare Form">
+  <div class="admin-container" data-dev={isDev ? "true" : "false"}>
+    <!-- Passcode Modal Gate -->
+    <div id="auth-gate" class="auth-gate-overlay">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <img src="/IG_logo.jpg" alt="Logo" class="logo-img" />
+        </div>
+        <h2>Acceso de Administrador</h2>
+        <p>Introduce la contraseña para continuar</p>
+        <form id="auth-form" onsubmit="event.preventDefault();">
+          <div class="input-group">
+            <input type="password" id="passcode-input" placeholder="Contraseña" required autocomplete="current-password" />
+            <button type="button" id="toggle-password" aria-label="Toggle password visibility">👁️</button>
+          </div>
+          <div id="auth-error" class="error-msg">Contraseña incorrecta</div>
+          <button type="submit" class="auth-submit-btn">Desbloquear</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Main Admin Dashboard Dashboard -->
+    <div id="admin-panel" class="admin-panel hidden">
+      <header class="admin-header">
+        <div class="header-info">
+          <h1>Panel de Control</h1>
+          <p class="subtitle">Administra tu Galería e Imágenes Destacadas</p>
+        </div>
+        <div class="env-badge-container">
+          {isDev ? (
+            <span class="badge dev-badge">🟢 Modo Desarrollo (Guardado Directo)</span>
+          ) : (
+            <span class="badge prod-badge">🟡 Modo Estático (Descarga de Archivos)</span>
+          )}
+        </div>
+      </header>
+
+      <!-- Navigation Tabs -->
+      <div class="admin-tabs">
+        <button class="tab-btn active" data-tab="tab-gallery">Galería ({allImages.length})</button>
+        <button class="tab-btn" data-tab="tab-slideshow">Carrusel Principal (<span id="carousel-count">0</span>)</button>
+        <button class="tab-btn" data-tab="tab-upload">Subir Imagen</button>
+      </div>
+
+      <!-- Tab Content: Gallery Grid -->
+      <section id="tab-gallery" class="tab-content active">
+        <div class="search-bar-container">
+          <input type="text" id="gallery-search" placeholder="Buscar por nombre (ej: Image (5)...)" />
+        </div>
+        <div class="media-grid" id="media-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- Tab Content: Slideshow Order -->
+      <section id="tab-slideshow" class="tab-content">
+        <div class="slideshow-info">
+          <p>ℹ️ Modifica el orden de aparición en el carrusel de la página de inicio. Usa las flechas para ordenar.</p>
+        </div>
+        <div class="slideshow-list" id="slideshow-list">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- Tab Content: Uploader -->
+      <section id="tab-upload" class="tab-content">
+        <div class="upload-area">
+          <div class="drop-zone" id="drop-zone">
+            <div class="drop-zone-prompt">
+              <span class="upload-icon">📁</span>
+              <p>Arrastra tu imagen aquí o haz clic para buscar</p>
+              <span class="formats-info">Formatos aceptados: PNG, JPG, JPEG, WEBP, HEIC (Auto-conversión a JPEG)</span>
+            </div>
+            <input type="file" id="file-input" accept="image/*" class="file-input-hidden" />
+          </div>
+          <div id="upload-preview-container" class="upload-preview-container hidden">
+            <h3>Vista previa</h3>
+            <img id="upload-preview" src="#" alt="Preview" />
+            <div class="upload-actions">
+              <button id="cancel-upload-btn" class="action-btn cancel-btn">Cancelar</button>
+              <button id="start-upload-btn" class="action-btn upload-btn">Subir Imagen</button>
+            </div>
+          </div>
+          <div id="upload-status" class="upload-status hidden">
+            <div class="spinner"></div>
+            <p id="upload-status-text">Procesando y guardando imagen...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Floating Save Actions Footer -->
+      <footer class="admin-footer-bar">
+        <div class="footer-left">
+          <p class="pending-badge hidden" id="unsaved-badge">⚠️ Cambios sin guardar</p>
+        </div>
+        <div class="footer-actions">
+          <button id="reset-btn" class="action-btn reset-btn">Restaurar</button>
+          {!isDev && (
+            <button id="download-btn" class="action-btn download-btn">Descargar JSONs</button>
+          )}
+          <button id="save-btn" class="action-btn save-btn">Guardar Cambios</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Success Toast -->
+  <div id="toast" class="toast hidden">
+    <span id="toast-icon">✔️</span>
+    <span id="toast-message">Guardado con éxito</span>
+  </div>
+</Layout>
+
+<style>
+  /* Styling variables matching Outfit theme */
+  :root {
+    --accent-color: #ff8da1;
+    --accent-hover: #ff718b;
+    --bg-darker: #050505;
+    --bg-card: rgba(20, 20, 20, 0.7);
+    --border-light: rgba(255, 255, 255, 0.1);
+    --border-focus: rgba(255, 141, 161, 0.5);
+  }
+
+  .admin-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    min-height: 80vh;
+  }
+
+  /* Auth Gate Modal */
+  .auth-gate-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease, visibility 0.5s;
+  }
+
+  .auth-gate-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .auth-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 1.5rem;
+    padding: 3rem;
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .auth-logo {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--accent-color);
+  }
+
+  .logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .auth-card h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
+  }
+
+  .auth-card p {
+    color: #888;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  .input-group {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  .input-group input {
+    width: 100%;
+    padding: 1rem;
+    padding-right: 3rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-light);
+    border-radius: 0.75rem;
+    color: #fff;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .input-group input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 12px rgba(255, 141, 161, 0.2);
+  }
+
+  #toggle-password {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 1.2rem;
+  }
+
+  .error-msg {
+    color: #ff4a6b;
+    font-size: 0.85rem;
+    text-align: left;
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+    display: none;
+  }
+
+  .auth-card.shake {
+    animation: shake 0.4s ease;
+  }
+
+  .auth-submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .auth-submit-btn:hover {
+    background: var(--accent-color);
+    box-shadow: 0 8px 20px rgba(255, 141, 161, 0.3);
+  }
+
+  /* Admin Dashboard Layout */
+  .admin-panel {
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  .admin-panel.hidden {
+    display: none;
+  }
+
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .admin-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(to bottom, #fff, #aaa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .admin-header .subtitle {
+    color: #888;
+    margin-top: 0.25rem;
+  }
+
+  .badge {
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .dev-badge {
+    background: rgba(46, 213, 115, 0.15);
+    color: #2ed573;
+    border: 1px solid rgba(46, 213, 115, 0.3);
+  }
+
+  .prod-badge {
+    background: rgba(ffa502, 0.15);
+    color: #ffa502;
+    border: 1px solid rgba(ffa502, 0.3);
+  }
+
+  /* Tabs Navigation */
+  .admin-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 0.75rem;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    color: #888;
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .tab-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .tab-btn.active {
+    color: #fff;
+    background: rgba(255, 141, 161, 0.1);
+    border: 1px solid rgba(255, 141, 161, 0.2);
+  }
+
+  /* Search */
+  .search-bar-container {
+    margin-bottom: 1.5rem;
+  }
+
+  .search-bar-container input {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-light);
+    border-radius: 0.75rem;
+    color: #fff;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .search-bar-container input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+  }
+
+  /* Tab Content display states */
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+    animation: fadeIn 0.4s ease;
+  }
+
+  /* Gallery Grid */
+  .media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 6rem;
+  }
+
+  .media-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .media-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .media-card.in-gallery {
+    border-color: rgba(46, 213, 115, 0.3);
+    box-shadow: 0 0 15px rgba(46, 213, 115, 0.08);
+  }
+
+  .media-card.in-slideshow {
+    border-color: rgba(255, 141, 161, 0.4);
+    box-shadow: 0 0 15px rgba(255, 141, 161, 0.1);
+  }
+
+  .media-card.in-gallery.in-slideshow {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 15px rgba(255, 141, 161, 0.15);
+  }
+
+  .image-wrapper {
+    position: relative;
+    aspect-ratio: 1;
+    background: #111;
+    overflow: hidden;
+  }
+
+  .card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .media-card:hover .card-img {
+    transform: scale(1.05);
+  }
+
+  .card-info {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-grow: 1;
+  }
+
+  .filename {
+    font-size: 0.85rem;
+    color: #aaa;
+    font-weight: 500;
+    word-break: break-all;
+  }
+
+  .card-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: auto;
+  }
+
+  /* Toggle Switches */
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 22px;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #333;
+    transition: 0.3s;
+    border-radius: 34px;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+  }
+
+  input:checked + .slider {
+    background-color: #2ed573;
+  }
+
+  input:checked + .slider.slider-slideshow {
+    background-color: var(--accent-color);
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(20px);
+  }
+
+  /* Slideshow order list */
+  .slideshow-info {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-light);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .slideshow-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 6rem;
+  }
+
+  .slideshow-item {
+    display: flex;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 1rem;
+    padding: 1rem;
+    gap: 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .slideshow-item:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .item-index {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent-color);
+    width: 30px;
+    text-align: center;
+  }
+
+  .item-thumb {
+    width: 70px;
+    height: 70px;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #111;
+  }
+
+  .item-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .item-name {
+    font-size: 1rem;
+    font-weight: 600;
+    flex-grow: 1;
+  }
+
+  .item-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .order-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-light);
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+  }
+
+  .order-btn:hover:not(:disabled) {
+    background: var(--accent-color);
+    color: #000;
+    border-color: var(--accent-color);
+  }
+
+  .order-btn:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+  }
+
+  /* Uploader */
+  .upload-area {
+    max-width: 600px;
+    margin: 0 auto 6rem;
+  }
+
+  .drop-zone {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 1.5rem;
+    padding: 4rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.01);
+  }
+
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent-color);
+    background: rgba(255, 141, 161, 0.05);
+  }
+
+  .upload-icon {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+  }
+
+  .drop-zone p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .formats-info {
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .file-input-hidden {
+    display: none;
+  }
+
+  .upload-preview-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    margin-top: 2rem;
+    text-align: center;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .upload-preview-container h3 {
+    margin-bottom: 1rem;
+  }
+
+  #upload-preview {
+    max-width: 100%;
+    max-height: 350px;
+    border-radius: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-light);
+  }
+
+  .upload-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  /* Spinner */
+  .upload-status {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top: 3px solid var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Floating Footer */
+  .admin-footer-bar {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 3rem);
+    max-width: 1140px;
+    background: rgba(10, 10, 10, 0.85);
+    border: 1px solid var(--border-light);
+    backdrop-filter: blur(12px);
+    border-radius: 1.5rem;
+    padding: 1.25rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 900;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+    animation: slideUp 0.5s ease-out;
+  }
+
+  .pending-badge {
+    background: rgba(255, 74, 107, 0.15);
+    color: #ff4a6b;
+    border: 1px solid rgba(255, 74, 107, 0.3);
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .action-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+  }
+
+  .save-btn {
+    background: #fff;
+    color: #000;
+  }
+
+  .save-btn:hover {
+    background: var(--accent-color);
+    box-shadow: 0 5px 15px rgba(255, 141, 161, 0.3);
+  }
+
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border-light);
+    color: #aaa;
+  }
+
+  .reset-btn:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .download-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-light);
+    color: #fff;
+  }
+
+  .download-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .cancel-btn {
+    background: none;
+    border: 1px solid var(--border-light);
+    color: #aaa;
+  }
+
+  .cancel-btn:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .upload-btn {
+    background: var(--accent-color);
+    color: #000;
+  }
+
+  .upload-btn:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 5px 15px rgba(255, 141, 161, 0.2);
+  }
+
+  /* Toasts */
+  .toast {
+    position: fixed;
+    bottom: 8rem;
+    right: 2rem;
+    background: #111;
+    border: 1px solid var(--accent-color);
+    border-radius: 0.75rem;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: translateY(0);
+  }
+
+  .toast.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+  }
+
+  /* Animations */
+  @keyframes scaleIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { transform: translate(-50%, 50px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  @media (max-width: 768px) {
+    .admin-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    
+    .admin-footer-bar {
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+      bottom: 1rem;
+      width: calc(100% - 1.5rem);
+    }
+    
+    .footer-actions {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .footer-actions button {
+      flex-grow: 1;
+      text-align: center;
+      padding: 0.75rem 0.5rem;
+      font-size: 0.85rem;
+    }
+  }
+</style>
+
+<!-- Client Side Business Logic -->
+<script define:vars={{ allImages, galleryImages, favoriteSlideshow }}>
+  // Variables parsed from frontmatter
+  let state = {
+    allImages: JSON.parse(JSON.stringify(allImages)),
+    galleryImages: JSON.parse(JSON.stringify(galleryImages)),
+    favoriteSlideshow: JSON.parse(JSON.stringify(favoriteSlideshow)),
+    originalState: {
+      galleryImages: JSON.parse(JSON.stringify(galleryImages)),
+      favoriteSlideshow: JSON.parse(JSON.stringify(favoriteSlideshow)),
+    }
+  };
+
+  const isDevMode = document.querySelector('.admin-container').dataset.dev === 'true';
+
+  // Load Auth State
+  document.addEventListener('DOMContentLoaded', () => {
+    initAuth();
+    initTabs();
+    renderGallery();
+    renderSlideshow();
+    initUploader();
+    initActions();
+  });
+
+  // Authentication gate
+  function initAuth() {
+    const authGate = document.getElementById('auth-gate');
+    const adminPanel = document.getElementById('admin-panel');
+    const authForm = document.getElementById('auth-form');
+    const passcodeVal = document.getElementById('passcode-input');
+    const authError = document.getElementById('auth-error');
+    const authCard = document.querySelector('.auth-card');
+    const togglePassBtn = document.getElementById('toggle-password');
+
+    // Check if already authenticated in this session
+    if (sessionStorage.getItem('bf_admin_auth') === 'true') {
+      authGate.classList.add('hidden');
+      adminPanel.classList.remove('hidden');
+    }
+
+    // Toggle password visibility
+    togglePassBtn.addEventListener('click', () => {
+      const type = passcodeVal.type === 'password' ? 'text' : 'password';
+      passcodeVal.type = type;
+      togglePassBtn.textContent = type === 'password' ? '👁️' : '🔒';
+    });
+
+    // Submit passcode
+    authForm.addEventListener('submit', () => {
+      // Secret pin verification
+      if (passcodeVal.value === 'admin123') {
+        sessionStorage.setItem('bf_admin_auth', 'true');
+        authGate.classList.add('hidden');
+        adminPanel.classList.remove('hidden');
+      } else {
+        authError.style.display = 'block';
+        authCard.classList.add('shake');
+        setTimeout(() => authCard.classList.remove('shake'), 400);
+      }
+    });
+  }
+
+  // Tabs navigation
+  function initTabs() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.dataset.tab;
+        
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+
+        btn.classList.add('active');
+        document.getElementById(targetTab).classList.add('active');
+      });
+    });
+  }
+
+  // Render gallery list grid
+  function renderGallery() {
+    const grid = document.getElementById('media-grid');
+    const searchVal = document.getElementById('gallery-search').value.toLowerCase();
+    grid.innerHTML = '';
+
+    state.allImages.forEach(img => {
+      if (searchVal && !img.fileName.toLowerCase().includes(searchVal)) {
+        return;
+      }
+
+      const inGallery = state.galleryImages.includes(img.fileName);
+      const inSlideshow = state.favoriteSlideshow.includes(img.fileName);
+
+      const card = document.createElement('div');
+      card.className = `media-card ${inGallery ? 'in-gallery' : ''} ${inSlideshow ? 'in-slideshow' : ''}`;
+      card.id = `card-${img.fileName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+
+      card.innerHTML = `
+        <div class="image-wrapper">
+          <img src="${img.src}" alt="${img.fileName}" class="card-img" loading="lazy" />
+        </div>
+        <div class="card-info">
+          <div class="filename">${img.fileName}</div>
+          <div class="card-controls">
+            <div class="switch-row">
+              <span>Visible Galería</span>
+              <label class="switch">
+                <input type="checkbox" class="toggle-gallery" data-file="${img.fileName}" ${inGallery ? 'checked' : ''} />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="switch-row">
+              <span>Destacado Inicio</span>
+              <label class="switch">
+                <input type="checkbox" class="toggle-slideshow" data-file="${img.fileName}" ${inSlideshow ? 'checked' : ''} />
+                <span class="slider slider-slideshow"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Event Listeners for checkboxes
+      card.querySelector('.toggle-gallery').addEventListener('change', (e) => {
+        toggleGalleryImage(img.fileName, e.target.checked);
+      });
+
+      card.querySelector('.toggle-slideshow').addEventListener('change', (e) => {
+        toggleSlideshowImage(img.fileName, e.target.checked);
+      });
+
+      grid.appendChild(card);
+    });
+
+    document.getElementById('gallery-search').addEventListener('input', renderGallery);
+    updateCarouselCountBadge();
+  }
+
+  // Toggle image visibility in gallery
+  function toggleGalleryImage(fileName, enabled) {
+    if (enabled) {
+      if (!state.galleryImages.includes(fileName)) {
+        state.galleryImages.push(fileName);
+      }
+    } else {
+      state.galleryImages = state.galleryImages.filter(name => name !== fileName);
+    }
+    
+    // Update card classes dynamically
+    const card = document.getElementById(`card-${fileName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    if (card) {
+      if (enabled) card.classList.add('in-gallery');
+      else card.classList.remove('in-gallery');
+    }
+    checkChangesPending();
+  }
+
+  // Toggle image presence in home slideshow
+  function toggleSlideshowImage(fileName, enabled) {
+    if (enabled) {
+      if (!state.favoriteSlideshow.includes(fileName)) {
+        state.favoriteSlideshow.push(fileName);
+      }
+    } else {
+      state.favoriteSlideshow = state.favoriteSlideshow.filter(name => name !== fileName);
+    }
+    
+    // Update card classes dynamically
+    const card = document.getElementById(`card-${fileName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    if (card) {
+      if (enabled) card.classList.add('in-slideshow');
+      else card.classList.remove('in-slideshow');
+    }
+    
+    renderSlideshow();
+    checkChangesPending();
+    updateCarouselCountBadge();
+  }
+
+  // Update badge count
+  function updateCarouselCountBadge() {
+    document.getElementById('carousel-count').textContent = state.favoriteSlideshow.length;
+  }
+
+  // Render Slideshow Order Editor
+  function renderSlideshow() {
+    const list = document.getElementById('slideshow-list');
+    list.innerHTML = '';
+
+    if (state.favoriteSlideshow.length === 0) {
+      list.innerHTML = '<div class="slideshow-info"><p>⚠️ No hay imágenes en el carrusel de inicio. Selecciona algunas imágenes en la pestaña de Galería.</p></div>';
+      return;
+    }
+
+    state.favoriteSlideshow.forEach((fileName, index) => {
+      const imgInfo = state.allImages.find(i => i.fileName === fileName) || { src: '', fileName };
+      const item = document.createElement('div');
+      item.className = 'slideshow-item';
+      
+      item.innerHTML = `
+        <div class="item-index">${index + 1}</div>
+        <div class="item-thumb">
+          <img src="${imgInfo.src}" alt="${fileName}" />
+        </div>
+        <div class="item-name">${fileName}</div>
+        <div class="item-actions">
+          <button class="order-btn move-up" title="Mover arriba" ${index === 0 ? 'disabled' : ''}>▲</button>
+          <button class="order-btn move-down" title="Mover abajo" ${index === state.favoriteSlideshow.length - 1 ? 'disabled' : ''}>▼</button>
+        </div>
+      `;
+
+      item.querySelector('.move-up').addEventListener('click', () => moveSlideshowIndex(index, index - 1));
+      item.querySelector('.move-down').addEventListener('click', () => moveSlideshowIndex(index, index + 1));
+
+      list.appendChild(item);
+    });
+  }
+
+  // Reorder index logic
+  function moveSlideshowIndex(from, to) {
+    if (to < 0 || to >= state.favoriteSlideshow.length) return;
+    
+    const arr = state.favoriteSlideshow;
+    const temp = arr[from];
+    arr[from] = arr[to];
+    arr[to] = temp;
+    
+    renderSlideshow();
+    checkChangesPending();
+  }
+
+  // Uploader Setup
+  function initUploader() {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const previewContainer = document.getElementById('upload-preview-container');
+    const previewImg = document.getElementById('upload-preview');
+    const cancelBtn = document.getElementById('cancel-upload-btn');
+    const uploadBtn = document.getElementById('start-upload-btn');
+    const statusDiv = document.getElementById('upload-status');
+    const statusText = document.getElementById('upload-status-text');
+
+    let selectedFile = null;
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files.length) {
+        handleFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) {
+        handleFileSelect(fileInput.files[0]);
+      }
+    });
+
+    function handleFileSelect(file) {
+      if (!file.type.startsWith('image/')) {
+        showToast('❌ Solo se permiten archivos de imagen', true);
+        return;
+      }
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        previewContainer.classList.remove('hidden');
+        dropZone.classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    cancelBtn.addEventListener('click', resetUploader);
+
+    function resetUploader() {
+      selectedFile = null;
+      fileInput.value = '';
+      previewContainer.classList.add('hidden');
+      dropZone.classList.remove('hidden');
+      statusDiv.classList.add('hidden');
+    }
+
+    uploadBtn.addEventListener('click', async () => {
+      if (!selectedFile) return;
+
+      statusDiv.classList.remove('hidden');
+      previewContainer.classList.add('hidden');
+      statusText.textContent = 'Procesando y guardando imagen...';
+
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+
+      try {
+        const response = await fetch('/api/upload-image', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          showToast(`✔️ Subida con éxito como ${result.fileName}`);
+          statusText.textContent = '¡Listo! Recargando galería...';
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+        } else {
+          showToast(`❌ Error: ${result.error || 'Fallo desconocido'}`, true);
+          statusDiv.classList.add('hidden');
+          previewContainer.classList.remove('hidden');
+        }
+      } catch (err) {
+        showToast('❌ Error de conexión al servidor', true);
+        statusDiv.classList.add('hidden');
+        previewContainer.classList.remove('hidden');
+      }
+    });
+  }
+
+  // Compare local changes to check if unsaved badge should show
+  function checkChangesPending() {
+    const currentGal = JSON.stringify(state.galleryImages.slice().sort());
+    const originalGal = JSON.stringify(state.originalState.galleryImages.slice().sort());
+    
+    const currentSlide = JSON.stringify(state.favoriteSlideshow);
+    const originalSlide = JSON.stringify(state.originalState.favoriteSlideshow);
+    
+    const hasChanged = (currentGal !== originalGal) || (currentSlide !== originalSlide);
+    const badge = document.getElementById('unsaved-badge');
+    
+    if (hasChanged) {
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
+
+  // Restore, save, download buttons
+  function initActions() {
+    const resetBtn = document.getElementById('reset-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const downloadBtn = document.getElementById('download-btn');
+
+    resetBtn.addEventListener('click', () => {
+      state.galleryImages = JSON.parse(JSON.stringify(state.originalState.galleryImages));
+      state.favoriteSlideshow = JSON.parse(JSON.stringify(state.originalState.favoriteSlideshow));
+      
+      renderGallery();
+      renderSlideshow();
+      checkChangesPending();
+      showToast('Configuraciones restauradas');
+    });
+
+    saveBtn.addEventListener('click', async () => {
+      // In Dev mode, save via API
+      if (isDevMode) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Guardando...';
+        
+        try {
+          const res = await fetch('/api/save-settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              favoriteSlideshow: state.favoriteSlideshow,
+              galleryImages: state.galleryImages
+            })
+          });
+          
+          const result = await res.json();
+          if (res.ok && result.success) {
+            state.originalState.galleryImages = JSON.parse(JSON.stringify(state.galleryImages));
+            state.originalState.favoriteSlideshow = JSON.parse(JSON.stringify(state.favoriteSlideshow));
+            checkChangesPending();
+            showToast('✔️ Configuraciones guardadas en disco');
+          } else {
+            showToast(`❌ Error: ${result.error || 'No se pudo guardar'}`, true);
+          }
+        } catch (e) {
+          showToast('❌ Error al conectar con la API', true);
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Guardar Cambios';
+        }
+      } else {
+        // Static production fallback: save to localStorage + alert
+        localStorage.setItem('bf_gallery_images', JSON.stringify(state.galleryImages));
+        localStorage.setItem('bf_favorite_slideshow', JSON.stringify(state.favoriteSlideshow));
+        
+        state.originalState.galleryImages = JSON.parse(JSON.stringify(state.galleryImages));
+        state.originalState.favoriteSlideshow = JSON.parse(JSON.stringify(state.favoriteSlideshow));
+        checkChangesPending();
+        
+        showToast('✔️ Guardado localmente. Recuerda descargar los JSONs para el servidor.');
+      }
+    });
+
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', () => {
+        downloadJson(state.favoriteSlideshow, 'favorite-slideshow.json');
+        setTimeout(() => {
+          downloadJson(state.galleryImages, 'gallery-images.json');
+        }, 300);
+        showToast('✔️ Archivos de configuración listos');
+      });
+    }
+  }
+
+  // Help download utility
+  function downloadJson(data, filename) {
+    const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // Premium Toast Notification
+  function showToast(message, isError = false) {
+    const toast = document.getElementById('toast');
+    const toastIcon = document.getElementById('toast-icon');
+    const toastMsg = document.getElementById('toast-message');
+
+    toastMsg.textContent = message;
+    toastIcon.textContent = isError ? '❌' : '✔️';
+    toast.style.borderColor = isError ? '#ff4a6b' : 'var(--accent-color)';
+
+    toast.classList.remove('hidden');
+    
+    setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 3000);
+  }
+</script>

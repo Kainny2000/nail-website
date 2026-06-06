@@ -1,6 +1,10 @@
 ---
 import PictureCard from "./PictureCard.astro";
 import "../styles/components/pictures-grid.css";
+import galleryImages from "../data/gallery-images.json";
+
+const activeGalleryImages = Array.isArray(galleryImages) ? galleryImages : [];
+
 const picturesImported = import.meta.glob("../assets/grid_gallery/*.jpeg", {
 	eager: true,
 }) as Record<string, { default: any }>;
@@ -17,7 +21,10 @@ for (const key of sortedKeys) {
 	const img = picturesImported[key];
 	if (!seenSources.has(img.default.src)) {
 		seenSources.add(img.default.src);
-		uniqueImages.push(img);
+		const fileName = key.split("/").pop() || "";
+		if (activeGalleryImages.length === 0 || activeGalleryImages.includes(fileName)) {
+			uniqueImages.push(img);
+		}
 	}
 }
 const images = uniqueImages;
