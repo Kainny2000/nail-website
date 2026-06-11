@@ -65,8 +65,8 @@ const initialData = JSON.stringify({
   <script id="po-initial" type="application/json" set:html={initialData}></script>
 
   <script>
-    // @ts-nocheck
     import Sortable from 'sortablejs';
+    import { mountDragDrop, reloadPreview, api } from '../../lib/admin-editor';
 
     const initial = JSON.parse(document.getElementById('po-initial').textContent);
     let state = {
@@ -200,19 +200,14 @@ const initialData = JSON.stringify({
     }
 
     async function patchPackage(id, patch) {
-      const r = await fetch(`/api/admin/press-on/${id}`, {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(patch),
-      });
-      if (r.ok) {
-        const data = await r.json();
+      try {
+        const data = await api('PATCH', `/api/admin/press-on/${id}`, patch);
         const idx = state.packages.findIndex((p) => p.id === id);
         if (idx >= 0) state.packages[idx] = data.package;
         render();
         window.adminToast('Actualizado', 'success');
-        reloadPreview();
-      } else {
+        reloadPreview(previewFrame);
+      } catch (err) {
         window.adminToast('Error', 'error');
       }
     }
@@ -248,14 +243,14 @@ const initialData = JSON.stringify({
     dialogDeleteBtn.addEventListener('click', async () => {
       if (!confirm('¿Eliminar este paquete?')) return;
       const id = dialogId.value;
-      const r = await fetch(`/api/admin/press-on/${id}`, { method: 'DELETE' });
-      if (r.ok) {
+      try {
+        await api('DELETE', `/api/admin/press-on/${id}`);
         state.packages = state.packages.filter((p) => p.id !== id);
         render();
         dialog.close();
         window.adminToast('Eliminado', 'success');
-        reloadPreview();
-      } else {
+        reloadPreview(previewFrame);
+      } catch (err) {
         window.adminToast('Error al eliminar', 'error');
       }
     });
@@ -269,53 +264,35 @@ const initialData = JSON.stringify({
         basePrice: Number(dialogPrice.value) || 0,
         hidden: dialogHidden.checked,
       };
-      let r;
-      if (id) {
-        r = await fetch(`/api/admin/press-on/${id}`, {
-          method: 'PATCH',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-      } else {
-        r = await fetch('/api/admin/press-on', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-      }
-      if (r.ok) {
-        const result = await r.json();
+      try {
+        let result;
         if (id) {
+          result = await api('PATCH', `/api/admin/press-on/${id}`, data);
           const idx = state.packages.findIndex((p) => p.id === id);
           if (idx >= 0) state.packages[idx] = result.package;
         } else {
+          result = await api('POST', '/api/admin/press-on', data);
           state.packages.push(result.package);
         }
         render();
         dialog.close();
         window.adminToast('Guardado', 'success');
-        reloadPreview();
-      } else {
+        reloadPreview(previewFrame);
+      } catch (err) {
         window.adminToast('Error al guardar', 'error');
       }
     });
 
-    new Sortable(list, {
-      animation: 150,
+    mountDragDrop(list, {
       handle: '.po-card-handle',
-      ghostClass: 'po-card-ghost',
       onEnd: async () => {
         const ids = [...list.querySelectorAll('.po-card')].map((c) => c.dataset.id);
-        await fetch('/api/admin/press-on/reorder', {
-          method: 'PUT',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ ids }),
-        });
+        await api('PUT', '/api/admin/press-on/reorder', { ids });
         state.packages.forEach((p) => {
           const newOrder = ids.indexOf(p.id);
           if (newOrder >= 0) p.order = newOrder;
         });
-        reloadPreview();
+        reloadPreview(previewFrame);
       },
     });
 
@@ -324,13 +301,6 @@ const initialData = JSON.stringify({
       previewFrame.hidden = visible;
       document.getElementById('po-preview-toggle').textContent = visible ? '✕ Cerrar preview' : '👁 Preview';
     });
-
-    function reloadPreview() {
-      const iframe = document.getElementById('admin-preview-iframe');
-      if (iframe && !previewFrame.hidden) {
-        iframe.src = iframe.src.split('?')[0] + '?t=' + Date.now();
-      }
-    }
 
     render();
   </script>

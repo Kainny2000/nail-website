@@ -104,8 +104,7 @@ const usedElsewhere = m.images
   </div>
 
   <script>
-    // @ts-nocheck
-    import Sortable from 'sortablejs';
+    import { mountDragDrop, makeDirtyTracker, mountPreviewToggle, reloadPreview, api } from '../../lib/admin-editor';
 
     const visibleList = document.getElementById('ce-visible-list');
     const availableList = document.getElementById('ce-available-list');
@@ -116,35 +115,13 @@ const usedElsewhere = m.images
     const visibleCount = document.getElementById('ce-visible-count');
     const filterInput = document.getElementById('ce-filter');
 
-    let dirty = false;
+    const tracker = makeDirtyTracker(saveBtn, savedIndicator);
+    const onChange = () => { tracker.mark(); refresh(); };
 
-    function markDirty() {
-      dirty = true;
-      savedIndicator.hidden = true;
-      saveBtn.classList.add('btn-primary');
-    }
-
-    function markClean() {
-      dirty = false;
-      savedIndicator.hidden = false;
-      saveBtn.classList.remove('btn-primary');
-    }
-
-    new Sortable(visibleList, {
+    mountDragDrop(visibleList, { group: 'gallery', handle: '.ce-card-handle', onUpdate: onChange, onAdd: onChange, onRemove: onChange });
+    mountDragDrop(availableList, {
       group: 'gallery',
-      animation: 150,
       handle: '.ce-card-handle',
-      ghostClass: 'ce-card-ghost',
-      onUpdate: markDirty,
-      onAdd: markDirty,
-      onRemove: markDirty,
-    });
-
-    new Sortable(availableList, {
-      group: 'gallery',
-      animation: 150,
-      handle: '.ce-card-handle',
-      ghostClass: 'ce-card-ghost',
       filter: '.ce-card-add',
       preventOnFilter: false,
       onAdd: (e) => {
@@ -157,7 +134,7 @@ const usedElsewhere = m.images
           btn.classList.remove('ce-card-add');
           btn.classList.add('ce-card-remove');
         }
-        markDirty();
+        onChange();
       },
     });
 
@@ -166,64 +143,45 @@ const usedElsewhere = m.images
     }
 
     visibleList.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-action="remove"]');
+      const btn = (e.target as HTMLElement).closest('[data-action="remove"]');
       if (!btn) return;
-      const card = btn.closest('.ce-card');
-      availableList.appendChild(card);
+      availableList.appendChild(btn.closest('.ce-card'));
       btn.remove();
-      markDirty();
-      refresh();
+      onChange();
     });
 
     availableList.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-action="add"]');
+      const btn = (e.target as HTMLElement).closest('[data-action="add"]');
       if (!btn) return;
-      const card = btn.closest('.ce-card');
-      visibleList.appendChild(card);
+      visibleList.appendChild(btn.closest('.ce-card'));
       btn.dataset.action = 'remove';
       btn.textContent = '×';
       btn.title = 'Quitar de la galería';
       btn.classList.remove('ce-card-add');
       btn.classList.add('ce-card-remove');
-      markDirty();
-      refresh();
+      onChange();
     });
 
     filterInput.addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase();
+      const q = (e.target as HTMLInputElement).value.toLowerCase();
       availableList.querySelectorAll('.ce-card').forEach((c) => {
-        c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
+        (c as HTMLElement).style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
       });
     });
 
     saveBtn.addEventListener('click', async () => {
-      const visible = [...visibleList.querySelectorAll('.ce-card')].map((c) => c.dataset.id);
-      const r = await fetch('/api/admin/gallery', {
-        method: 'PUT',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ visible }),
-      });
-      if (r.ok) {
-        markClean();
+      const visible = [...visibleList.querySelectorAll('.ce-card')].map((c) => (c as HTMLElement).dataset.id);
+      try {
+        await api('PUT', '/api/admin/gallery', { visible });
+        tracker.clean();
         window.adminToast(`Guardado · ${visible.length} visible(s)`, 'success');
-        const iframe = document.getElementById('admin-preview-iframe');
-        if (iframe && !previewFrame.hidden) {
-          iframe.src = iframe.src.split('?')[0] + '?t=' + Date.now();
-        }
-      } else {
+        reloadPreview(previewFrame);
+      } catch (err) {
         window.adminToast('Error al guardar', 'error');
       }
     });
 
-    previewToggle.addEventListener('click', () => {
-      const visible = previewFrame.hidden;
-      previewFrame.hidden = visible;
-      previewToggle.textContent = visible ? '✕ Cerrar preview' : '👁 Preview';
-    });
-
-    window.addEventListener('beforeunload', (e) => {
-      if (dirty) { e.preventDefault(); e.returnValue = ''; }
-    });
+    mountPreviewToggle(previewToggle, previewFrame);
 
     refresh();
   </script>
