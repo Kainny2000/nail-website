@@ -1118,3 +1118,96 @@ a:hover { color: var(--admin-accent-2); }
 
 .admin-preview-reload:hover, .admin-preview-open:hover { background: var(--admin-surface); color: var(--admin-text); }
 .admin-preview-iframe { flex: 1; width: 100%; border: none; background: white; }
+
+/* ---------- Multi-upload (image library) ---------- */
+.lib-pick-hint {
+  font-size: 0.78rem;
+  color: var(--admin-text-faint);
+  margin: 0;
+  flex-basis: 100%;
+}
+
+.lib-grid-wrap { position: relative; min-height: 240px; }
+
+.lib-dropzone {
+  position: absolute;
+  inset: 0;
+  border: 2px dashed var(--admin-accent);
+  border-radius: var(--admin-radius);
+  background: rgba(245, 183, 193, 0.08);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+  backdrop-filter: blur(2px);
+}
+
+.lib-dropzone.is-active { display: flex; }
+
+.lib-dropzone-inner { text-align: center; color: var(--admin-accent); }
+.lib-dropzone-icon { font-size: 2.5rem; line-height: 1; margin-bottom: 0.4rem; }
+.lib-dropzone-text { font-size: 0.95rem; font-weight: 500; }
+
+.lib-progress {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.lib-progress-text {
+  font-size: 0.88rem;
+  color: var(--admin-text);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.lib-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--admin-surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.lib-progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--admin-accent);
+  transition: width 0.2s ease;
+}
+
+.lib-result-list {
+  list-style: none;
+  margin: 0.7rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.lib-result {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  background: var(--admin-surface-2);
+}
+
+.lib-result[data-status="ok"] { color: var(--admin-success); }
+.lib-result[data-status="fail"] { color: var(--admin-danger); }
+
+.lib-result-icon { font-weight: 700; width: 1.1rem; text-align: center; }
+.lib-result-name { flex: 1; font-family: ui-monospace, SFMono-Regular, monospace; word-break: break-all; }
+.lib-result-reason { font-size: 0.75rem; color: var(--admin-text-faint); }
+
+@media (hover: none) {
+  .btn { min-height: 36px; }
+}

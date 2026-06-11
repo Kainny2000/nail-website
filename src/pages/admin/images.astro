@@ -18,6 +18,7 @@ const allTags = [...new Set(manifest.images.flatMap((i) => i.tags))].sort();
       </div>
       <button class="btn btn-primary" id="lib-upload-btn">+ Subir imágenes</button>
       <input type="file" id="lib-upload-input" multiple accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" hidden />
+      <p class="lib-pick-hint">o arrastra y suelta aquí · recomendado máx 20 por lote</p>
     </div>
 
     <div class="lib-toolbar-right">
@@ -77,6 +78,12 @@ const allTags = [...new Set(manifest.images.flatMap((i) => i.tags))].sort();
     </aside>
 
     <div class="lib-main">
+      <div class="lib-progress" id="lib-progress" hidden>
+        <span class="lib-progress-text" id="lib-progress-text"></span>
+        <div class="lib-progress-bar"><div class="lib-progress-fill" id="lib-progress-fill"></div></div>
+        <ul class="lib-result-list" id="lib-result-list"></ul>
+      </div>
+
       <div class="lib-bulk-bar" id="lib-bulk-bar" hidden>
         <span><span id="lib-bulk-count">0</span> seleccionadas</span>
         <button class="btn" data-bulk="show">Mostrar</button>
@@ -88,8 +95,16 @@ const allTags = [...new Set(manifest.images.flatMap((i) => i.tags))].sort();
         <button class="btn btn-ghost" data-bulk="clear" style="margin-left:auto">Limpiar</button>
       </div>
 
-      <div class="lib-grid" id="lib-grid">
-        <div class="lib-empty">Cargando…</div>
+      <div class="lib-grid-wrap">
+        <div class="lib-grid" id="lib-grid">
+          <div class="lib-empty">Cargando…</div>
+        </div>
+        <div class="lib-dropzone" id="lib-dropzone">
+          <div class="lib-dropzone-inner">
+            <div class="lib-dropzone-icon">⤓</div>
+            <div class="lib-dropzone-text">Suelta las imágenes para subirlas</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -112,6 +127,14 @@ const allTags = [...new Set(manifest.images.flatMap((i) => i.tags))].sort();
         <div class="lib-card-tags"></div>
       </div>
     </div>
+  </template>
+
+  <template id="lib-result-row-tpl">
+    <li class="lib-result" data-status="">
+      <span class="lib-result-icon"></span>
+      <span class="lib-result-name"></span>
+      <span class="lib-result-reason"></span>
+    </li>
   </template>
 
   <script define:vars={{ allTags, allImages: manifest.images.map((i) => ({
@@ -393,28 +416,98 @@ const allTags = [...new Set(manifest.images.flatMap((i) => i.tags))].sort();
       render();
     });
 
+    const SOFT_CAP = 20;
+    const progressEl = document.getElementById('lib-progress');
+    const progressText = document.getElementById('lib-progress-text');
+    const progressFill = document.getElementById('lib-progress-fill');
+    const resultList = document.getElementById('lib-result-list');
+    const dropzone = document.getElementById('lib-dropzone');
+    const resultTpl = document.getElementById('lib-result-row-tpl');
+
+    async function uploadFiles(files) {
+      const arr = Array.from(files || []);
+      if (arr.length === 0) return;
+      if (arr.length > SOFT_CAP && !confirm(`Vas a subir ${arr.length} imágenes. ¿Continuar?`)) return;
+
+      progressEl.hidden = false;
+      resultList.innerHTML = '';
+      progressText.textContent = `Subiendo 0/${arr.length}…`;
+      progressFill.style.width = '0%';
+
+      const fd = new FormData();
+      for (const f of arr) fd.append('files', f);
+
+      let data;
+      try {
+        const r = await fetch('/api/admin/images', { method: 'POST', body: fd });
+        data = await r.json();
+      } catch (err) {
+        window.adminToast('Error al subir', 'error');
+        progressEl.hidden = true;
+        return;
+      }
+
+      let done = 0;
+      for (const res of (data.results || [])) {
+        done++;
+        const node = resultTpl.content.firstElementChild.cloneNode(true);
+        node.dataset.status = res.ok ? 'ok' : 'fail';
+        node.querySelector('.lib-result-icon').textContent = res.ok ? '✓' : '✗';
+        node.querySelector('.lib-result-name').textContent = res.image?.filename || res.error || 'archivo';
+        if (!res.ok && res.error) node.querySelector('.lib-result-reason').textContent = res.error;
+        resultList.appendChild(node);
+        progressText.textContent = `Subiendo ${done}/${arr.length}…`;
+        progressFill.style.width = `${(done / arr.length) * 100}%`;
+      }
+
+      window.adminToast(
+        `${data.uploaded || 0} subida(s)${data.failed ? `, ${data.failed} fallida(s)` : ''}`,
+        data.failed ? 'info' : 'success'
+      );
+
+      try {
+        const list = await (await fetch('/api/admin/images')).json();
+        state.images = list.images;
+      } catch {}
+
+      render();
+      updateFilterCounts();
+
+      setTimeout(() => { progressEl.hidden = true; }, 6000);
+    }
+
     document.getElementById('lib-upload-btn').addEventListener('click', () => {
       document.getElementById('lib-upload-input').click();
     });
 
     document.getElementById('lib-upload-input').addEventListener('change', async (e) => {
-      const files = e.target.files;
-      if (!files || files.length === 0) return;
-      const fd = new FormData();
-      for (const f of files) fd.append('files', f);
-      const r = await fetch('/api/admin/images', { method: 'POST', body: fd });
-      const data = await r.json();
-      if (r.ok) {
-        window.adminToast(`${data.uploaded} subida(s)${data.failed ? `, ${data.failed} fallida(s)` : ''}`, data.failed ? 'info' : 'success');
-        const list = await (await fetch('/api/admin/images')).json();
-        state.images = list.images;
-        render();
-        updateFilterCounts();
-      } else {
-        window.adminToast('Error al subir', 'error');
-      }
+      await uploadFiles(e.target.files);
       e.target.value = '';
     });
+
+    let dragCounter = 0;
+    const gridWrap = document.querySelector('.lib-grid-wrap');
+    gridWrap?.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      dragCounter++;
+      dropzone.classList.add('is-active');
+    });
+    gridWrap?.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+    gridWrap?.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dragCounter = Math.max(0, dragCounter - 1);
+      if (dragCounter === 0) dropzone.classList.remove('is-active');
+    });
+    gridWrap?.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      dragCounter = 0;
+      dropzone.classList.remove('is-active');
+      await uploadFiles(e.dataTransfer?.files);
+    });
+    document.addEventListener('dragover', (e) => e.preventDefault());
+    document.addEventListener('drop', (e) => e.preventDefault());
 
     document.querySelectorAll('[data-bulk]').forEach(btn => {
       btn.addEventListener('click', async () => {
