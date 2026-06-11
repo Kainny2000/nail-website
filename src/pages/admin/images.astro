@@ -250,8 +250,9 @@ const allTags = [...new Set(manifest.images.flatMap((i) => i.tags))].sort();
       content.innerHTML = `
         <div class="lib-detail-thumb"><img src="${bestThumb(img).replace(/\/400\./, '/800.')}" alt="${escapeHtml(img.alt)}" /></div>
         <div class="lib-detail-section">
-          <div class="lib-detail-label">Filename</div>
-          <div class="lib-detail-static">${escapeHtml(img.filename)}</div>
+          <label class="lib-detail-label" for="detail-filename">Filename</label>
+          <input id="detail-filename" type="text" value="${escapeHtml(img.filename)}" />
+          <p class="lib-detail-hint">Edit the base name. The extension is kept automatically.</p>
         </div>
         <div class="lib-detail-section">
           <label class="lib-detail-label" for="detail-alt">Alt <span class="lib-detail-required">requerido</span></label>
@@ -292,6 +293,7 @@ const allTags = [...new Set(manifest.images.flatMap((i) => i.tags))].sort();
           caption: document.getElementById('detail-caption').value,
           tags: document.getElementById('detail-tags').value.split(',').map(s => s.trim()).filter(Boolean),
           hidden: document.getElementById('detail-hidden').checked,
+          filename: document.getElementById('detail-filename').value,
           usedIn: {
             carousel: document.getElementById('detail-carousel').checked,
             gallery: document.getElementById('detail-gallery').checked,

@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
-import { readManifest, writeManifest } from '../../../../lib/admin/manifest';
-import { deleteImageFiles } from '../../../../lib/admin/images';
+import { rename } from 'node:fs/promises';
+import path from 'node:path';
+import { readManifest, writeManifest, GRID_GALLERY_DIR } from '../../../../lib/admin/manifest';
+import { deleteImageFiles, sanitizeFilename, ensureUniqueFilename } from '../../../../lib/admin/images';
 
 export const GET: APIRoute = async ({ params }) => {
   const m = await readManifest();
@@ -19,6 +21,23 @@ export const PATCH: APIRoute = async ({ params, request }) => {
   if (typeof body.caption === 'string') img.caption = body.caption;
   if (Array.isArray(body.tags)) img.tags = body.tags.map((t: any) => String(t).trim()).filter(Boolean);
   if (typeof body.hidden === 'boolean') img.hidden = body.hidden;
+  if (typeof body.filename === 'string') {
+    const baseOnly = body.filename.trim().replace(/\.[^.]+$/, '');
+    const sanitized = sanitizeFilename(baseOnly);
+    if (sanitized) {
+      const ext = path.extname(img.filename);
+      const desired = sanitized + ext;
+      const unique = await ensureUniqueFilename(GRID_GALLERY_DIR, desired);
+      if (unique !== img.filename) {
+        await rename(
+          path.join(GRID_GALLERY_DIR, img.filename),
+          path.join(GRID_GALLERY_DIR, unique)
+        );
+        img.filename = unique;
+        img.originalPath = 'src/assets/grid_gallery/' + unique;
+      }
+    }
+  }
   if (body.usedIn) {
     if (typeof body.usedIn.carousel === 'boolean') {
       img.usedIn.carousel = body.usedIn.carousel;
