@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import { mkdir, rm, writeFile, readFile, stat, access } from 'node:fs/promises';
+import { mkdir, rm, writeFile, stat, access } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import path from 'node:path';
 import { nanoid } from 'nanoid';
@@ -136,38 +136,11 @@ export async function generateVariants(
   return variants;
 }
 
-export async function generateAllVariants(imageId: string, profiles: { carousel: OptimizationProfile; gallery: OptimizationProfile; pressOn: OptimizationProfile }): Promise<ImageVariant[]> {
-  const source = await readFile(path.join(GRID_GALLERY_DIR, await getOriginalFilename(imageId)));
-  const allVariants: ImageVariant[] = [];
-  const seen = new Set<string>();
-  for (const profile of [profiles.carousel, profiles.gallery, profiles.pressOn]) {
-    const variants = await generateVariants(source, imageId, profile);
-    for (const v of variants) {
-      const key = v.width + '.' + v.format;
-      if (!seen.has(key)) { seen.add(key); allVariants.push(v); }
-    }
-  }
-  return allVariants;
-}
-
-async function getOriginalFilename(imageId: string): Promise<string> {
-  const { readManifest } = await import('./manifest');
-  const m = await readManifest();
-  const img = m.images.find((i) => i.id === imageId);
-  if (!img) throw new Error('Image not found: ' + imageId);
-  return img.filename;
-}
-
 export async function deleteImageFiles(image: AdminImage): Promise<void> {
   const dir = path.join(OPTIMIZED_DIR, image.id);
   await rm(dir, { recursive: true, force: true });
   const original = path.join(GRID_GALLERY_DIR, image.filename);
   await rm(original, { force: true });
-}
-
-export async function deleteImageVariants(imageId: string): Promise<void> {
-  const dir = path.join(OPTIMIZED_DIR, imageId);
-  await rm(dir, { recursive: true, force: true });
 }
 
 export { VALID_FORMATS, VALID_FITS };

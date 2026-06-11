@@ -1870,42 +1870,17 @@
     }
   ],
   "optimization": {
-    "carousel": {
-      "widths": [
-        1200,
-        800
-      ],
-      "formats": [
-        "avif",
-        "webp"
-      ],
-      "quality": 80,
-      "fit": "cover"
-    },
-    "gallery": {
-      "widths": [
-        400,
-        800
-      ],
-      "formats": [
-        "avif",
-        "webp"
-      ],
-      "quality": 75,
-      "fit": "cover"
-    },
-    "pressOn": {
-      "widths": [
-        600,
-        1200
-      ],
-      "formats": [
-        "avif",
-        "webp"
-      ],
-      "quality": 80,
-      "fit": "cover"
-    }
+    "widths": [
+      400,
+      800,
+      1200
+    ],
+    "formats": [
+      "avif",
+      "webp"
+    ],
+    "quality": 78,
+    "fit": "cover"
   },
   "updatedAt": "2026-06-10T08:59:40.664Z"
 }

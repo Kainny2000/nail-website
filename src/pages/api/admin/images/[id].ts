@@ -1,7 +1,6 @@
 import type { APIRoute } from 'astro';
 import { readManifest, writeManifest } from '../../../../lib/admin/manifest';
-import { deleteImageFiles, deleteImageVariants } from '../../../../lib/admin/images';
-import { generateAllVariants } from '../../../../lib/admin/images';
+import { deleteImageFiles } from '../../../../lib/admin/images';
 
 export const GET: APIRoute = async ({ params }) => {
   const m = await readManifest();

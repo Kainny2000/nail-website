@@ -52,11 +52,7 @@ export interface Manifest {
   version: 1;
   images: AdminImage[];
   pressOnPackages: PressOnPackage[];
-  optimization: {
-    carousel: OptimizationProfile;
-    gallery: OptimizationProfile;
-    pressOn: OptimizationProfile;
-  };
+  optimization: OptimizationProfile;
   updatedAt: string;
 }
 

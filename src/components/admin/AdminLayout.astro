@@ -4,7 +4,7 @@ import { newCsrfToken, getCsrfFromCookieHeader, buildCsrfCookie } from "../../li
 
 interface Props {
   title: string;
-  active: "dashboard" | "images" | "carousel" | "gallery" | "press-on" | "settings";
+  active: "dashboard" | "images" | "carousel" | "gallery" | "press-on";
 }
 
 const { title, active } = Astro.props;
@@ -21,7 +21,6 @@ const navItems = [
   { id: "carousel", label: "Carousel", href: "/admin/carousel", icon: "🎠" },
   { id: "gallery", label: "Gallery", href: "/admin/gallery", icon: "🪞" },
   { id: "press-on", label: "Press-On", href: "/admin/press-on", icon: "💅" },
-  { id: "settings", label: "Settings", href: "/admin/settings", icon: "⚙" },
 ] as const;
 ---
 <!doctype html>

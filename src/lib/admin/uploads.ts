@@ -38,15 +38,7 @@ export async function processUpload(file: File): Promise<UploadResult | UploadEr
 
   const manifest = await readManifest();
   const id = makeId();
-  const seen = new Set<string>();
-  const variants: AdminImage['variants'] = [];
-  for (const profile of [manifest.optimization.carousel, manifest.optimization.gallery, manifest.optimization.pressOn]) {
-    const v = await generateVariants(buf, id, profile);
-    for (const variant of v) {
-      const k = variant.width + '.' + variant.format;
-      if (!seen.has(k)) { seen.add(k); variants.push(variant); }
-    }
-  }
+  const variants = await generateVariants(buf, id, manifest.optimization);
 
   const image: AdminImage = {
     id,
@@ -78,19 +70,7 @@ export async function regenerateVariantsForImage(imageId: string): Promise<Admin
   if (!image) throw new Error('Image not found: ' + imageId);
 
   const buf = await readFile(path.join(GRID_GALLERY_DIR, image.filename));
-  const seen = new Set<string>();
-  const allVariants: AdminImage['variants'] = [];
-
-  for (const key of ['carousel', 'gallery', 'pressOn'] as const) {
-    const profile = manifest.optimization[key];
-    const variants = await generateVariants(buf, imageId, profile);
-    for (const v of variants) {
-      const k = v.width + '.' + v.format;
-      if (!seen.has(k)) { seen.add(k); allVariants.push(v); }
-    }
-  }
-
-  image.variants = allVariants;
+  image.variants = await generateVariants(buf, imageId, manifest.optimization);
   await writeManifest(manifest);
   return image;
 }

@@ -60,9 +60,10 @@ async function acquireLock(): Promise<() => Promise<void>> {
 }
 
 export const DEFAULT_OPTIMIZATION: Manifest['optimization'] = {
-  carousel: { widths: [1200, 800], formats: ['avif', 'webp'], quality: 80, fit: 'cover' },
-  gallery: { widths: [400, 800], formats: ['avif', 'webp'], quality: 75, fit: 'cover' },
-  pressOn: { widths: [600, 1200], formats: ['avif', 'webp'], quality: 80, fit: 'cover' },
+  widths: [400, 800, 1200],
+  formats: ['avif', 'webp'],
+  quality: 78,
+  fit: 'cover',
 };
 
 export function emptyManifest(): Manifest {

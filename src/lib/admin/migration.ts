@@ -42,15 +42,7 @@ export async function runMigration(): Promise<Manifest> {
       .trim() || 'Nail art';
 
     const id = makeId();
-    const seen = new Set<string>();
-    const variants: AdminImage['variants'] = [];
-    for (const profile of [manifest.optimization.carousel, manifest.optimization.gallery, manifest.optimization.pressOn]) {
-      const v = await generateVariants(buf, id, profile);
-      for (const variant of v) {
-        const k = variant.width + '.' + variant.format;
-        if (!seen.has(k)) { seen.add(k); variants.push(variant); }
-      }
-    }
+    const variants = await generateVariants(buf, id, manifest.optimization);
 
     const image: AdminImage = {
       id,

@@ -59,27 +59,24 @@ function toPublicImage(img: AdminImage, profile: OptimizationProfile, formatPrio
 
 export async function getCarouselImages(): Promise<PublicImage[]> {
   const m = await ensureManifest();
-  const profile = m.optimization.carousel;
   return m.images
     .filter((i) => i.usedIn.carousel && !i.hidden)
     .sort((a, b) => a.carouselOrder - b.carouselOrder)
-    .map((i) => toPublicImage(i, profile))
+    .map((i) => toPublicImage(i, m.optimization))
     .filter((x): x is PublicImage => x !== null);
 }
 
 export async function getGalleryImages(): Promise<PublicImage[]> {
   const m = await ensureManifest();
-  const profile = m.optimization.gallery;
   return m.images
     .filter((i) => i.usedIn.gallery && !i.hidden)
     .sort((a, b) => a.galleryOrder - b.galleryOrder)
-    .map((i) => toPublicImage(i, profile))
+    .map((i) => toPublicImage(i, m.optimization))
     .filter((x): x is PublicImage => x !== null);
 }
 
 export async function getPressOnPackagesWithImages(): Promise<PublicPackage[]> {
   const m = await ensureManifest();
-  const profile = m.optimization.pressOn;
   const imgMap = new Map(m.images.map((i) => [i.id, i]));
   return m.pressOnPackages
     .filter((p) => !p.hidden)
@@ -88,7 +85,7 @@ export async function getPressOnPackagesWithImages(): Promise<PublicPackage[]> {
       const imgs = p.imageIds
         .map((id) => imgMap.get(id))
         .filter((i): i is AdminImage => Boolean(i) && !i!.hidden)
-        .map((i) => toPublicImage(i, profile))
+        .map((i) => toPublicImage(i, m.optimization))
         .filter((x): x is PublicImage => x !== null);
       const hero = p.heroImageId ? imgs.find((i) => i.id === p.heroImageId) ?? imgs[0] ?? null : imgs[0] ?? null;
       return {
@@ -102,36 +99,23 @@ export async function getPressOnPackagesWithImages(): Promise<PublicPackage[]> {
     });
 }
 
-export async function getImagesForSection(section: 'carousel' | 'gallery' | 'pressOn'): Promise<PublicImage[]> {
-  if (section === 'carousel') return getCarouselImages();
-  if (section === 'gallery') return getGalleryImages();
-  const m = await readManifest();
-  const profile = m.optimization.pressOn;
-  return m.images
-    .filter((i) => i.usedIn.pressOnPackages.length > 0 && !i.hidden)
-    .map((i) => toPublicImage(i, profile))
-    .filter((x): x is PublicImage => x !== null);
-}
-
 export async function getImageRecord(id: string): Promise<AdminImage | null> {
   const m = await ensureManifest();
   return m.images.find((i) => i.id === id) ?? null;
 }
 
-export async function getPublicImageUrl(image: AdminImage, profileKey: 'carousel' | 'gallery' | 'pressOn' = 'gallery'): Promise<string> {
+export async function getPublicImageUrl(image: AdminImage): Promise<string> {
   const m = await ensureManifest();
-  const profile = m.optimization[profileKey];
-  const chosen = bestVariant(image, profile.formats, profile.widths[0] ?? image.variants[0]?.width ?? 800);
+  const chosen = bestVariant(image, m.optimization.formats, m.optimization.widths[0] ?? image.variants[0]?.width ?? 800);
   if (!chosen) return `/optimized/${image.id}/${image.variants[0]?.filename ?? ''}`;
   return `/optimized/${image.id}/${chosen.width}.${chosen.format}`;
 }
 
-export async function getSrcset(image: AdminImage, profileKey: 'carousel' | 'gallery' | 'pressOn' = 'gallery'): Promise<string> {
+export async function getSrcset(image: AdminImage): Promise<string> {
   const m = await ensureManifest();
-  const profile = m.optimization[profileKey];
-  return profile.widths
+  return m.optimization.widths
     .map((w) => {
-      const v = bestVariant(image, profile.formats, w);
+      const v = bestVariant(image, m.optimization.formats, w);
       if (!v) return '';
       return `/optimized/${image.id}/${v.width}.${v.format} ${v.width}w`;
     })
@@ -142,3 +126,4 @@ export async function getSrcset(image: AdminImage, profileKey: 'carousel' | 'gal
 export function isAdminRequest(request: Request): boolean {
   return request.headers.get('cookie')?.includes('bf_admin=') ?? false;
 }
+
