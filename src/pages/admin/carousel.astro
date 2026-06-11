@@ -15,7 +15,7 @@ const available = m.images
   <div slot="topbar-right" class="ce-topbar">
     <button class="btn" id="ce-save">💾 Guardar</button>
     <span class="ce-saved-indicator" id="ce-saved-indicator" hidden>✓ Guardado</span>
-    <button class="btn" id="ce-preview-toggle">👁 Preview</button>
+    <button class="btn admin-preview-hide-mobile" id="ce-preview-toggle">👁 Preview</button>
   </div>
 
   <p class="ce-hint">Arrastra imágenes al panel <strong>Activas</strong> para incluirlas en el carrusel del home. La primera es la imagen principal (hero).</p>
@@ -33,6 +33,10 @@ const available = m.images
             <div class="ce-card-info">
               <div class="ce-card-name">{img.filename}</div>
               <div class="ce-card-alt">{img.alt}</div>
+            </div>
+            <div class="ce-card-move">
+              <button class="ce-card-move-btn" data-move="up" title="Subir" aria-label="Subir">▲</button>
+              <button class="ce-card-move-btn" data-move="down" title="Bajar" aria-label="Bajar">▼</button>
             </div>
             <button class="ce-card-remove" data-action="remove" title="Quitar del carrusel">×</button>
           </div>
@@ -110,7 +114,24 @@ const available = m.images
       activeCount.textContent = String(activeList.querySelectorAll('.ce-card').length);
     }
 
+    function moveCard(card, dir) {
+      if (dir === 'up' && card.previousElementSibling) {
+        activeList.insertBefore(card, card.previousElementSibling);
+      } else if (dir === 'down' && card.nextElementSibling) {
+        activeList.insertBefore(card.nextElementSibling, card);
+      } else {
+        return;
+      }
+      onChange();
+    }
+
     activeList.addEventListener('click', (e) => {
+      const moveBtn = (e.target as HTMLElement).closest('[data-move]');
+      if (moveBtn) {
+        const card = moveBtn.closest('.ce-card');
+        moveCard(card, moveBtn.dataset.move);
+        return;
+      }
       const btn = (e.target as HTMLElement).closest('[data-action="remove"]');
       if (!btn) return;
       const card = btn.closest('.ce-card');

@@ -1211,3 +1211,142 @@ a:hover { color: var(--admin-accent-2); }
 @media (hover: none) {
   .btn { min-height: 36px; }
 }
+
+/* ---------- Mobile (≤720px) ---------- */
+.admin-burger {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text);
+  width: 38px; height: 38px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-burger:hover { background: var(--admin-surface-2); }
+
+.admin-nav-scrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  border: none;
+  cursor: pointer;
+  z-index: 49;
+  backdrop-filter: blur(2px);
+}
+
+@media (max-width: 720px) {
+  .admin-burger { display: inline-flex; }
+
+  .admin-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.22s ease-out;
+    z-index: 60;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+  }
+
+  body.nav-open .admin-sidebar { transform: translateX(0); }
+  body.nav-open .admin-nav-scrim { display: block; }
+
+  .admin-main { margin-left: 0; }
+
+  .admin-topbar { padding: 0.8rem 1rem; gap: 0.6rem; }
+  .admin-page-title { font-size: 1.1rem; }
+  .admin-content { padding: 1rem; }
+
+  /* Editor grids: hide preview toggle button on mobile (preview is desktop-only) */
+  .ce-topbar .admin-preview-hide-mobile { display: none; }
+  .po-topbar .admin-preview-hide-mobile { display: none; }
+
+  /* Touch target sizing for editor controls */
+  .ce-card-add, .ce-card-remove { width: 32px; height: 32px; font-size: 1.1rem; }
+  .po-image-hero, .po-image-remove { width: 26px; height: 26px; opacity: 1; }
+  .ce-card-handle { font-size: 1rem; padding: 0 0.4rem; }
+  .po-card-handle { padding: 0 0.4rem; font-size: 1.05rem; }
+
+  /* Dashboard tiles: hide subtitle on small screens */
+  .dash-tile-sub { display: none; }
+  .dash-tile { padding: 1rem; }
+
+  /* Filter sidebar: more compact on mobile */
+  .lib-filters { padding: 0.75rem; }
+  .lib-filter-row { font-size: 0.85rem; }
+
+  /* Press-on image picker: allow horizontal scroll on mobile */
+  .po-picker-grid {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: 80px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-height: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-topbar { padding: 0.7rem 0.85rem; }
+  .lib-toolbar { flex-direction: column; align-items: stretch; }
+  .lib-toolbar-left { flex-direction: column; align-items: stretch; }
+  .lib-search-input { min-width: 0; width: 100%; }
+  .lib-pick-hint { text-align: center; }
+}
+
+/* ---------- Reorder buttons (mobile-friendly) ---------- */
+.ce-card-move {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.ce-card-move-btn {
+  width: 22px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-text-dim);
+  cursor: pointer;
+  font-size: 0.55rem;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.ce-card-move-btn:hover {
+  background: var(--admin-accent);
+  color: #1a0a0f;
+  border-color: var(--admin-accent);
+}
+
+.po-card-move-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid var(--admin-border);
+  background: transparent;
+  color: var(--admin-text-dim);
+  cursor: pointer;
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.25rem;
+  transition: all 0.15s;
+}
+
+.po-card-move-btn:hover {
+  background: var(--admin-accent);
+  color: #1a0a0f;
+  border-color: var(--admin-accent);
+}

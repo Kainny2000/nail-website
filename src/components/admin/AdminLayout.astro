@@ -64,6 +64,7 @@ const navItems = [
 
     <main class="admin-main">
       <header class="admin-topbar">
+        <button class="admin-burger" data-burger aria-label="Abrir menú">☰</button>
         <h1 class="admin-page-title">{title}</h1>
         <div class="admin-topbar-right">
           <slot name="topbar-right" />
@@ -74,6 +75,8 @@ const navItems = [
         <slot />
       </div>
     </main>
+
+    <button class="admin-nav-scrim" data-burger-scrim aria-label="Cerrar menú"></button>
 
     <div id="toast-host" class="toast-host" aria-live="polite"></div>
 
@@ -109,6 +112,16 @@ const navItems = [
         }
         return origFetch(input, init);
       };
+
+      const burger = document.querySelector('[data-burger]');
+      const scrim = document.querySelector('[data-burger-scrim]');
+      const setNav = (open) => {
+        document.body.classList.toggle('nav-open', open);
+      };
+      burger?.addEventListener('click', () => setNav(!document.body.classList.contains('nav-open')));
+      scrim?.addEventListener('click', () => setNav(false));
+      document.querySelectorAll('.admin-nav-link').forEach((a) => a.addEventListener('click', () => setNav(false)));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setNav(false); });
     </script>
   </body>
 </html>

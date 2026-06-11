@@ -21,7 +21,7 @@ const initialData = JSON.stringify({
 <AdminLayout title="Press-On Packages" active="press-on">
   <div slot="topbar-right" class="ce-topbar">
     <button class="btn btn-primary" id="po-new">+ Nuevo paquete</button>
-    <button class="btn" id="po-preview-toggle">👁 Preview</button>
+    <button class="btn admin-preview-hide-mobile" id="po-preview-toggle">👁 Preview</button>
   </div>
 
   <p class="ce-hint">Crea y edita los paquetes de press-on. Arrastra imágenes a un paquete para asociarlas. La primera imagen es la principal (hero).</p>
@@ -105,6 +105,8 @@ const initialData = JSON.stringify({
             <div class="po-card-title">${escapeHtml(pkg.name)}${pkg.hidden ? ' <span class="po-badge-hidden">oculto</span>' : ''}</div>
             <div class="po-card-price">$${pkg.basePrice}</div>
             <div class="po-card-actions">
+              <button class="po-card-move-btn" data-move="up" title="Subir" aria-label="Subir">▲</button>
+              <button class="po-card-move-btn" data-move="down" title="Bajar" aria-label="Bajar">▼</button>
               <button class="btn btn-ghost" data-act="edit">✎</button>
             </div>
           </div>
@@ -149,6 +151,27 @@ const initialData = JSON.stringify({
     function attachListeners() {
       list.querySelectorAll('.po-card').forEach((card) => {
         const id = card.dataset.id;
+
+        card.querySelectorAll('[data-move]').forEach((m) => {
+          m.addEventListener('click', async (ev) => {
+            ev.stopPropagation();
+            const dir = m.dataset.move;
+            if (dir === 'up' && card.previousElementSibling) {
+              list.insertBefore(card, card.previousElementSibling);
+            } else if (dir === 'down' && card.nextElementSibling) {
+              list.insertBefore(card.nextElementSibling, card);
+            } else {
+              return;
+            }
+            const ids = [...list.querySelectorAll('.po-card')].map((c) => c.dataset.id);
+            await api('PUT', '/api/admin/press-on/reorder', { ids });
+            state.packages.forEach((p) => {
+              const newOrder = ids.indexOf(p.id);
+              if (newOrder >= 0) p.order = newOrder;
+            });
+            reloadPreview(previewFrame);
+          });
+        });
 
         card.querySelector('[data-act="edit"]').addEventListener('click', () => openDialog(id));
         card.querySelector('[data-act="pick"]').addEventListener('click', () => {
