@@ -80,12 +80,19 @@ export async function manifestExists(): Promise<boolean> {
   return fileExists(MANIFEST_PATH);
 }
 
+let cached: Manifest | null = null;
+let cachedAt = 0;
+const CACHE_TTL_MS = 1000;
+
 export async function readManifest(): Promise<Manifest> {
+  if (cached && Date.now() - cachedAt < CACHE_TTL_MS) return cached;
   const raw = await readFile(MANIFEST_PATH, 'utf8');
   const parsed = JSON.parse(raw) as Manifest;
   parsed.optimization = parsed.optimization ?? structuredClone(DEFAULT_OPTIMIZATION);
   parsed.images = parsed.images ?? [];
   parsed.pressOnPackages = parsed.pressOnPackages ?? [];
+  cached = parsed;
+  cachedAt = Date.now();
   return parsed;
 }
 
@@ -97,6 +104,8 @@ export async function writeManifest(manifest: Manifest): Promise<void> {
     const tmpPath = MANIFEST_PATH + '.tmp-' + process.pid + '-' + Date.now();
     await writeFile(tmpPath, JSON.stringify(manifest, null, 2), 'utf8');
     await rename(tmpPath, MANIFEST_PATH);
+    cached = manifest;
+    cachedAt = Date.now();
   } finally {
     await release();
   }
@@ -107,6 +116,11 @@ export async function updateManifest(mutator: (m: Manifest) => void | Promise<vo
   await mutator(m);
   await writeManifest(m);
   return m;
+}
+
+export function invalidateManifestCache(): void {
+  cached = null;
+  cachedAt = 0;
 }
 
 export async function readManifestIfExists(): Promise<Manifest | null> {
