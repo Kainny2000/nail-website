@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..', '..');
 
-export const ADMIN_DIR = path.join(PROJECT_ROOT, 'src', 'data', 'admin');
+export const ADMIN_DIR = path.join(PROJECT_ROOT, 'data', 'admin');
 export const MANIFEST_PATH = path.join(ADMIN_DIR, 'manifest.json');
 export const LOCK_PATH = path.join(ADMIN_DIR, '.lock');
 export const GRID_GALLERY_DIR = path.join(PROJECT_ROOT, 'src', 'assets', 'grid_gallery');

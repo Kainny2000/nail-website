@@ -8,8 +8,8 @@ dist/
 public/optimized/
 
 # admin runtime lock + temp
-src/data/admin/.lock
-src/data/admin/.tmp-*
+data/admin/.lock
+data/admin/.tmp-*
 
 # env files
 .env
