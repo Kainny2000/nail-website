@@ -1,0 +1,337 @@
+---
+import AdminLayout from "../../components/admin/AdminLayout.astro";
+import PreviewFrame from "../../components/admin/PreviewFrame.astro";
+import { readManifest } from "../../lib/admin/manifest";
+import "../../styles/admin/press-on-editor.css";
+
+const m = await readManifest();
+const packages = [...m.pressOnPackages].sort((a, b) => a.order - b.order);
+const allImages = m.images.filter((i) => !i.hidden);
+const initialData = JSON.stringify({
+  packages,
+  images: allImages.map((i) => ({
+    id: i.id,
+    filename: i.filename,
+    alt: i.alt,
+    width: i.width,
+    height: i.height,
+    thumb: `/optimized/${i.id}/400.webp`,
+  })),
+});
+---
+<AdminLayout title="Press-On Packages" active="press-on">
+  <div slot="topbar-right" class="ce-topbar">
+    <button class="btn btn-primary" id="po-new">+ Nuevo paquete</button>
+    <button class="btn" id="po-preview-toggle">👁 Preview</button>
+  </div>
+
+  <p class="ce-hint">Crea y edita los paquetes de press-on. Arrastra imágenes a un paquete para asociarlas. La primera imagen es la principal (hero).</p>
+
+  <div class="po-layout">
+    <div class="po-pane" id="po-packages-pane">
+      <div class="po-list" id="po-packages-list"></div>
+    </div>
+
+    <PreviewFrame src="/press-on" label="Preview de press-on" />
+  </div>
+
+  <dialog id="po-edit-dialog" class="po-dialog">
+    <form method="dialog" class="po-dialog-form" id="po-dialog-form">
+      <h2 id="po-dialog-title">Editar paquete</h2>
+      <input type="hidden" name="id" id="po-dialog-id" />
+      <label class="po-field">
+        <span>Nombre</span>
+        <input type="text" name="name" id="po-dialog-name" required />
+      </label>
+      <label class="po-field">
+        <span>Descripción</span>
+        <textarea name="description" id="po-dialog-description" rows="3"></textarea>
+      </label>
+      <label class="po-field">
+        <span>Precio base (USD)</span>
+        <input type="number" name="basePrice" id="po-dialog-price" min="0" step="1" value="0" />
+      </label>
+      <div class="po-field po-field-row">
+        <label><input type="checkbox" id="po-dialog-hidden" /> Oculto</label>
+      </div>
+      <div class="po-dialog-actions">
+        <button type="button" class="btn" data-action="cancel">Cancelar</button>
+        <button type="button" class="btn btn-danger" data-action="delete" hidden>Eliminar</button>
+        <button type="submit" class="btn btn-primary" data-action="save">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script id="po-initial" type="application/json" set:html={initialData}></script>
+
+  <script>
+    // @ts-nocheck
+    import Sortable from 'sortablejs';
+
+    const initial = JSON.parse(document.getElementById('po-initial').textContent);
+    let state = {
+      packages: initial.packages,
+      images: initial.images,
+    };
+
+    const list = document.getElementById('po-packages-list');
+    const dialog = document.getElementById('po-edit-dialog');
+    const form = document.getElementById('po-dialog-form');
+    const dialogId = document.getElementById('po-dialog-id');
+    const dialogName = document.getElementById('po-dialog-name');
+    const dialogDescription = document.getElementById('po-dialog-description');
+    const dialogPrice = document.getElementById('po-dialog-price');
+    const dialogHidden = document.getElementById('po-dialog-hidden');
+    const dialogTitle = document.getElementById('po-dialog-title');
+    const dialogDeleteBtn = form.querySelector('[data-action="delete"]');
+    const previewFrame = document.getElementById('admin-preview-frame');
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s ?? '';
+      return div.innerHTML;
+    }
+
+    function render() {
+      list.innerHTML = '';
+      for (const pkg of state.packages) {
+        const card = document.createElement('div');
+        card.className = 'po-card' + (pkg.hidden ? ' is-hidden' : '');
+        card.dataset.id = pkg.id;
+        const images = pkg.imageIds.map((id) => state.images.find((i) => i.id === id)).filter(Boolean);
+        const hero = images.find((i) => i.id === pkg.heroImageId) || images[0];
+        card.innerHTML = `
+          <div class="po-card-head">
+            <div class="po-card-handle">⋮⋮</div>
+            <div class="po-card-title">${escapeHtml(pkg.name)}${pkg.hidden ? ' <span class="po-badge-hidden">oculto</span>' : ''}</div>
+            <div class="po-card-price">$${pkg.basePrice}</div>
+            <div class="po-card-actions">
+              <button class="btn btn-ghost" data-act="edit">✎</button>
+            </div>
+          </div>
+          <p class="po-card-desc">${escapeHtml(pkg.description)}</p>
+          <div class="po-images">
+            <div class="po-images-header">
+              <span>${images.length} imagen(es)</span>
+              <button class="btn btn-ghost po-add-images" data-act="pick">+ Añadir</button>
+            </div>
+            <div class="po-images-grid" data-zone="pkg-images">
+              ${images.map((img) => `
+                <div class="po-image" data-id="${img.id}">
+                  <img src="${img.thumb}" alt="${escapeHtml(img.alt)}" loading="lazy" />
+                  ${pkg.heroImageId === img.id ? '<span class="po-hero-badge">hero</span>' : ''}
+                  <button class="po-image-hero" data-act="set-hero" title="Marcar como hero">★</button>
+                  <button class="po-image-remove" data-act="remove-img" title="Quitar">×</button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="po-image-picker" hidden>
+            <div class="po-picker-head">
+              <span>Selecciona imágenes</span>
+              <button class="btn btn-ghost" data-act="close-picker">Cerrar</button>
+            </div>
+            <div class="po-picker-grid">
+              ${state.images.filter((i) => !i.hidden).map((img) => `
+                <label class="po-picker-item ${pkg.imageIds.includes(img.id) ? 'is-selected' : ''}" data-img-id="${img.id}">
+                  <input type="checkbox" ${pkg.imageIds.includes(img.id) ? 'checked' : ''} />
+                  <img src="${img.thumb}" alt="${escapeHtml(img.alt)}" />
+                  <div class="po-picker-name">${escapeHtml(img.filename)}</div>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      }
+      attachListeners();
+    }
+
+    function attachListeners() {
+      list.querySelectorAll('.po-card').forEach((card) => {
+        const id = card.dataset.id;
+
+        card.querySelector('[data-act="edit"]').addEventListener('click', () => openDialog(id));
+        card.querySelector('[data-act="pick"]').addEventListener('click', () => {
+          const picker = card.querySelector('.po-image-picker');
+          picker.hidden = !picker.hidden;
+        });
+        card.querySelector('[data-act="close-picker"]').addEventListener('click', () => {
+          card.querySelector('.po-image-picker').hidden = true;
+        });
+        card.querySelectorAll('.po-picker-item').forEach((item) => {
+          item.addEventListener('click', async (e) => {
+            if (e.target.tagName === 'INPUT') return;
+            const cb = item.querySelector('input');
+            cb.checked = !cb.checked;
+            item.classList.toggle('is-selected', cb.checked);
+            await savePackageImages(id, card);
+          });
+        });
+        card.querySelectorAll('.po-picker-item input').forEach((cb) => {
+          cb.addEventListener('change', async () => {
+            cb.closest('.po-picker-item').classList.toggle('is-selected', cb.checked);
+            await savePackageImages(id, card);
+          });
+        });
+        card.querySelectorAll('[data-act="set-hero"]').forEach((btn) => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const imgId = btn.closest('.po-image').dataset.id;
+            await patchPackage(id, { heroImageId: imgId });
+          });
+        });
+        card.querySelectorAll('[data-act="remove-img"]').forEach((btn) => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const imgId = btn.closest('.po-image').dataset.id;
+            const pkg = state.packages.find((p) => p.id === id);
+            pkg.imageIds = pkg.imageIds.filter((x) => x !== imgId);
+            if (pkg.heroImageId === imgId) pkg.heroImageId = pkg.imageIds[0] ?? null;
+            await patchPackage(id, { imageIds: pkg.imageIds, heroImageId: pkg.heroImageId });
+          });
+        });
+      });
+    }
+
+    async function savePackageImages(id, card) {
+      const ids = [...card.querySelectorAll('.po-picker-item input:checked')].map((cb) => cb.closest('.po-picker-item').dataset.imgId);
+      await patchPackage(id, { imageIds: ids });
+    }
+
+    async function patchPackage(id, patch) {
+      const r = await fetch(`/api/admin/press-on/${id}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        const idx = state.packages.findIndex((p) => p.id === id);
+        if (idx >= 0) state.packages[idx] = data.package;
+        render();
+        window.adminToast('Actualizado', 'success');
+        reloadPreview();
+      } else {
+        window.adminToast('Error', 'error');
+      }
+    }
+
+    function openDialog(id) {
+      if (id) {
+        const pkg = state.packages.find((p) => p.id === id);
+        if (!pkg) return;
+        dialogTitle.textContent = 'Editar paquete';
+        dialogId.value = pkg.id;
+        dialogName.value = pkg.name;
+        dialogDescription.value = pkg.description;
+        dialogPrice.value = String(pkg.basePrice);
+        dialogHidden.checked = pkg.hidden;
+        dialogDeleteBtn.hidden = false;
+      } else {
+        dialogTitle.textContent = 'Nuevo paquete';
+        dialogId.value = '';
+        dialogName.value = '';
+        dialogDescription.value = '';
+        dialogPrice.value = '0';
+        dialogHidden.checked = false;
+        dialogDeleteBtn.hidden = true;
+      }
+      dialog.showModal();
+      setTimeout(() => dialogName.focus(), 50);
+    }
+
+    document.getElementById('po-new').addEventListener('click', () => openDialog(null));
+
+    form.querySelector('[data-action="cancel"]').addEventListener('click', () => dialog.close());
+
+    dialogDeleteBtn.addEventListener('click', async () => {
+      if (!confirm('¿Eliminar este paquete?')) return;
+      const id = dialogId.value;
+      const r = await fetch(`/api/admin/press-on/${id}`, { method: 'DELETE' });
+      if (r.ok) {
+        state.packages = state.packages.filter((p) => p.id !== id);
+        render();
+        dialog.close();
+        window.adminToast('Eliminado', 'success');
+        reloadPreview();
+      } else {
+        window.adminToast('Error al eliminar', 'error');
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = dialogId.value;
+      const data = {
+        name: dialogName.value,
+        description: dialogDescription.value,
+        basePrice: Number(dialogPrice.value) || 0,
+        hidden: dialogHidden.checked,
+      };
+      let r;
+      if (id) {
+        r = await fetch(`/api/admin/press-on/${id}`, {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      } else {
+        r = await fetch('/api/admin/press-on', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      }
+      if (r.ok) {
+        const result = await r.json();
+        if (id) {
+          const idx = state.packages.findIndex((p) => p.id === id);
+          if (idx >= 0) state.packages[idx] = result.package;
+        } else {
+          state.packages.push(result.package);
+        }
+        render();
+        dialog.close();
+        window.adminToast('Guardado', 'success');
+        reloadPreview();
+      } else {
+        window.adminToast('Error al guardar', 'error');
+      }
+    });
+
+    new Sortable(list, {
+      animation: 150,
+      handle: '.po-card-handle',
+      ghostClass: 'po-card-ghost',
+      onEnd: async () => {
+        const ids = [...list.querySelectorAll('.po-card')].map((c) => c.dataset.id);
+        await fetch('/api/admin/press-on/reorder', {
+          method: 'PUT',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ ids }),
+        });
+        state.packages.forEach((p) => {
+          const newOrder = ids.indexOf(p.id);
+          if (newOrder >= 0) p.order = newOrder;
+        });
+        reloadPreview();
+      },
+    });
+
+    document.getElementById('po-preview-toggle').addEventListener('click', () => {
+      const visible = previewFrame.hidden;
+      previewFrame.hidden = visible;
+      document.getElementById('po-preview-toggle').textContent = visible ? '✕ Cerrar preview' : '👁 Preview';
+    });
+
+    function reloadPreview() {
+      const iframe = document.getElementById('admin-preview-iframe');
+      if (iframe && !previewFrame.hidden) {
+        iframe.src = iframe.src.split('?')[0] + '?t=' + Date.now();
+      }
+    }
+
+    render();
+  </script>
+</AdminLayout>

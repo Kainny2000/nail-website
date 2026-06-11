@@ -1,36 +1,38 @@
 ---
-import { Image } from "astro:assets";
 import "../styles/components/home-slideshow.css";
-import favoriteSlideshow from "../data/favorite-slideshow.json";
+import { getCarouselImages } from "../lib/admin/public-queries";
 
-const picturesImported = import.meta.glob("../assets/grid_gallery/*.jpeg", {
-    eager: true,
-}) as Record<string, { default: any }>;
-
-const images = favoriteSlideshow
-    .map((fileName) => picturesImported[`../assets/grid_gallery/${fileName}`])
-    .filter((image) => image !== undefined);
+const images = await getCarouselImages();
 ---
 
 <div class="home-slideshow">
-    <div class="slides-container">
-        {
-            images.map((image, index) => (
+    {images.length === 0 ? (
+        <div class="slideshow-empty">
+            <p>El carrusel está vacío. Añade imágenes desde el panel de admin.</p>
+        </div>
+    ) : (
+        <div class="slides-container">
+            {images.map((image, index) => (
                 <div
                     class={`slide ${index === 0 ? "active" : ""}`}
                     data-index={index}
                 >
-                    <Image
-                        src={image.default}
-                        alt={`Nail Art ${index + 1}`}
-                        width={1200}
-                        height={800}
+                    <img
+                        src={image.url}
+                        srcset={image.srcset}
+                        sizes="100vw"
+                        alt={image.alt}
+                        width={image.width}
+                        height={image.height}
+                        loading={index === 0 ? "eager" : "lazy"}
+                        decoding="async"
+                        fetchpriority={index === 0 ? "high" : "auto"}
                         class="slide-image"
                     />
                 </div>
-            ))
-        }
-    </div>
+            ))}
+        </div>
+    )}
     <div class="slideshow-overlay">
         <div class="overlay-content">
             <h1 class="hero-title">Bare Form</h1>

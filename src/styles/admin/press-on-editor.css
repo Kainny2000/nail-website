@@ -1,0 +1,283 @@
+.po-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.po-layout:has(.admin-preview:not([hidden])) {
+  grid-template-columns: 1fr 1fr 1.4fr;
+}
+
+.po-pane {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  padding: 0.75rem;
+}
+
+.po-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.po-card {
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  padding: 0.75rem 0.9rem;
+}
+
+.po-card.is-hidden { opacity: 0.5; }
+
+.po-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.po-card-handle {
+  cursor: grab;
+  color: var(--admin-text-faint);
+  user-select: none;
+}
+
+.po-card-title {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.po-card-price {
+  font-size: 0.85rem;
+  color: var(--admin-accent);
+  font-weight: 600;
+}
+
+.po-card-actions button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.po-card-desc {
+  font-size: 0.85rem;
+  color: var(--admin-text-dim);
+  margin: 0 0 0.6rem;
+  line-height: 1.4;
+}
+
+.po-badge-hidden {
+  font-size: 0.65rem;
+  background: rgba(248, 113, 113, 0.2);
+  color: var(--admin-danger);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  margin-left: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.po-images-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--admin-text-dim);
+  margin-bottom: 0.4rem;
+}
+
+.po-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.4rem;
+  min-height: 40px;
+}
+
+.po-images-grid:empty::before {
+  content: 'Sin imágenes';
+  grid-column: 1/-1;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--admin-text-faint);
+  padding: 0.5rem;
+  border: 1px dashed var(--admin-border);
+  border-radius: 6px;
+}
+
+.po-image {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--admin-surface);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--admin-border);
+}
+
+.po-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.po-image-hero, .po-image-remove {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.po-image-hero { top: 0.25rem; left: 0.25rem; }
+.po-image-remove { top: 0.25rem; right: 0.25rem; background: rgba(248, 113, 113, 0.8); }
+
+.po-image:hover .po-image-hero,
+.po-image:hover .po-image-remove { opacity: 1; }
+
+.po-hero-badge {
+  position: absolute;
+  bottom: 0.25rem;
+  left: 0.25rem;
+  background: var(--admin-accent);
+  color: #1a0a0f;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.po-image-picker {
+  margin-top: 0.6rem;
+  padding: 0.6rem;
+  background: var(--admin-surface);
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+}
+
+.po-picker-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  color: var(--admin-text-dim);
+}
+
+.po-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 0.3rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.po-picker-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.po-picker-item.is-selected { border-color: var(--admin-accent); }
+.po-picker-item input { position: absolute; top: 0.25rem; left: 0.25rem; z-index: 2; }
+.po-picker-item img { width: 100%; height: 100%; object-fit: cover; }
+
+.po-picker-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 0.6rem;
+  padding: 0.15rem 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.po-picker-item:hover .po-picker-name { opacity: 1; }
+
+.po-card-ghost { opacity: 0.4; }
+
+.po-dialog {
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  padding: 0;
+  max-width: 480px;
+  width: 90vw;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.po-dialog::backdrop { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); }
+
+.po-dialog-form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.po-dialog-form h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.po-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.po-field > span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--admin-text-dim);
+}
+
+.po-field-row { flex-direction: row; align-items: center; gap: 0.4rem; }
+.po-field-row label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; cursor: pointer; }
+
+.po-dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--admin-border);
+}
+
+.po-dialog-actions .btn-danger { margin-right: auto; }
+
+@media (max-width: 1100px) {
+  .po-layout { grid-template-columns: 1fr; }
+  .po-layout:has(.admin-preview:not([hidden])) { grid-template-columns: 1fr; }
+}

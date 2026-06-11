@@ -4,6 +4,18 @@ dist/
 # generated types
 .astro/
 
+# optimized image variants (regenerable from manifest)
+public/optimized/
+
+# admin runtime lock + temp
+src/data/admin/.lock
+src/data/admin/.tmp-*
+
+# env files
+.env
+.env.local
+.env.*.local
+
 # dependencies
 node_modules/
 

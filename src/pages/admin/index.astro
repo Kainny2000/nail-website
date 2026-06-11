@@ -1,0 +1,81 @@
+---
+import { runMigration } from "../../lib/admin/migration";
+import { readManifest } from "../../lib/admin/migration";
+import AdminLayout from "../../components/admin/AdminLayout.astro";
+import "../../styles/admin/dashboard.css";
+
+let manifest: Awaited<ReturnType<typeof readManifest>> | null = null;
+let migrationRan = false;
+try {
+  manifest = await readManifest();
+} catch {
+  manifest = await runMigration();
+  migrationRan = true;
+}
+
+const stats = manifest
+  ? {
+      total: manifest.images.length,
+      carousel: manifest.images.filter((i) => i.usedIn.carousel).length,
+      gallery: manifest.images.filter((i) => i.usedIn.gallery).length,
+      pressOn: manifest.images.filter((i) => i.usedIn.pressOnPackages.length > 0).length,
+      hidden: manifest.images.filter((i) => i.hidden).length,
+      unused: manifest.images.filter((i) => !i.usedIn.carousel && !i.usedIn.gallery && i.usedIn.pressOnPackages.length === 0).length,
+      packages: manifest.pressOnPackages.length,
+    }
+  : null;
+---
+<AdminLayout title="Dashboard" active="dashboard">
+  {migrationRan && (
+    <div class="migration-banner">
+      ✓ Migración inicial completada — 25 imágenes importadas, 6 paquetes press-on creados.
+    </div>
+  )}
+
+  <div class="dashboard-grid">
+    <a href="/admin/images" class="dash-tile">
+      <div class="dash-tile-icon">🖼️</div>
+      <div class="dash-tile-body">
+        <div class="dash-tile-title">Image Library</div>
+        <div class="dash-tile-sub">{stats?.total ?? 0} imágenes · {stats?.hidden ?? 0} ocultas</div>
+      </div>
+      <div class="dash-tile-arrow">→</div>
+    </a>
+
+    <a href="/admin/carousel" class="dash-tile">
+      <div class="dash-tile-icon">🎠</div>
+      <div class="dash-tile-body">
+        <div class="dash-tile-title">Carousel</div>
+        <div class="dash-tile-sub">{stats?.carousel ?? 0} activas</div>
+      </div>
+      <div class="dash-tile-arrow">→</div>
+    </a>
+
+    <a href="/admin/gallery" class="dash-tile">
+      <div class="dash-tile-icon">🪞</div>
+      <div class="dash-tile-body">
+        <div class="dash-tile-title">Gallery</div>
+        <div class="dash-tile-sub">{stats?.gallery ?? 0} visibles · {stats?.unused ?? 0} sin usar</div>
+      </div>
+      <div class="dash-tile-arrow">→</div>
+    </a>
+
+    <a href="/admin/press-on" class="dash-tile">
+      <div class="dash-tile-icon">💅</div>
+      <div class="dash-tile-body">
+        <div class="dash-tile-title">Press-On</div>
+        <div class="dash-tile-sub">{stats?.packages ?? 0} paquetes</div>
+      </div>
+      <div class="dash-tile-arrow">→</div>
+    </a>
+
+    <a href="/admin/settings" class="dash-tile">
+      <div class="dash-tile-icon">⚙️</div>
+      <div class="dash-tile-body">
+        <div class="dash-tile-title">Settings</div>
+        <div class="dash-tile-sub">Optimización, sesión</div>
+      </div>
+      <div class="dash-tile-arrow">→</div>
+    </a>
+  </div>
+</AdminLayout>

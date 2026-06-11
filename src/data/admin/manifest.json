@@ -1,0 +1,1911 @@
+{
+  "version": 1,
+  "images": [
+    {
+      "id": "img_4hWw5AWzq6Fi",
+      "filename": "Image (1).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (1).jpeg",
+      "uploadedAt": "2026-06-10T08:51:56.324Z",
+      "size": 43646,
+      "width": 768,
+      "height": 1024,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": true,
+        "gallery": false,
+        "pressOnPackages": []
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 0,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 41838
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 34452
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 41838
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 34452
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 17504
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 11362
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 36488
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 24432
+        }
+      ]
+    },
+    {
+      "id": "img_K5HMzz0Ic0f7",
+      "filename": "Image (10).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (10).jpeg",
+      "uploadedAt": "2026-06-10T08:52:04.410Z",
+      "size": 203184,
+      "width": 1152,
+      "height": 2048,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": true,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "french-tip"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 0,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 149593
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 112608
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 90776
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 60166
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 23985
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 15094
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 58051
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 37252
+        }
+      ]
+    },
+    {
+      "id": "img_FuVmrzrwEs_9",
+      "filename": "Image (11).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (11).jpeg",
+      "uploadedAt": "2026-06-10T08:52:11.532Z",
+      "size": 178336,
+      "width": 1152,
+      "height": 2048,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": true,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "french-tip"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 1,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 125104
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 88178
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 72855
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 48460
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 19105
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 12950
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 46675
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 30952
+        }
+      ]
+    },
+    {
+      "id": "img_p36Vn0p2vhuS",
+      "filename": "Image (12).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (12).jpeg",
+      "uploadedAt": "2026-06-10T08:52:21.971Z",
+      "size": 951259,
+      "width": 3840,
+      "height": 5120,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": true,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "french-tip",
+          "marmol"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 2,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 132696
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 89682
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 73923
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 49582
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 19015
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 11946
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 45848
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 29898
+        }
+      ]
+    },
+    {
+      "id": "img_GbVdABkrurWh",
+      "filename": "Image (13).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (13).jpeg",
+      "uploadedAt": "2026-06-10T08:52:32.098Z",
+      "size": 962686,
+      "width": 3024,
+      "height": 4032,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "marmol"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 3,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 154828
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 96098
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 75887
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 48696
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 21029
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 12962
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 46411
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 29650
+        }
+      ]
+    },
+    {
+      "id": "img_MSx0Ju3JfzLZ",
+      "filename": "Image (14).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (14).jpeg",
+      "uploadedAt": "2026-06-10T08:52:41.078Z",
+      "size": 980150,
+      "width": 3840,
+      "height": 5120,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "marmol",
+          "glitter"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 4,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 131364
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 88392
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 73250
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 48004
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 21716
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 13654
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 47972
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 31842
+        }
+      ]
+    },
+    {
+      "id": "img_bsjUSxhAM7SO",
+      "filename": "Image (15).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (15).jpeg",
+      "uploadedAt": "2026-06-10T08:52:54.714Z",
+      "size": 1046048,
+      "width": 3840,
+      "height": 5120,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "glitter"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 5,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 151859
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 97370
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 79104
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 52292
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 20772
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 13468
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 48168
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 32278
+        }
+      ]
+    },
+    {
+      "id": "img_rI4g_lNH30YV",
+      "filename": "Image (16).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (16).jpeg",
+      "uploadedAt": "2026-06-10T08:53:06.017Z",
+      "size": 959337,
+      "width": 3840,
+      "height": 5120,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "glitter",
+          "floral"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 6,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 131776
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 87506
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 70900
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 46196
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 18143
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 11610
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 43743
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 28408
+        }
+      ]
+    },
+    {
+      "id": "img_HQeD2ec3cRNa",
+      "filename": "Image (17).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (17).jpeg",
+      "uploadedAt": "2026-06-10T08:53:15.496Z",
+      "size": 191266,
+      "width": 1152,
+      "height": 2048,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "floral"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 7,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 138488
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 106044
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 88261
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 61570
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 27985
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 18410
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 60858
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 41024
+        }
+      ]
+    },
+    {
+      "id": "img_N6rdLs2jE0UG",
+      "filename": "Image (18).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (18).jpeg",
+      "uploadedAt": "2026-06-10T08:53:23.300Z",
+      "size": 185872,
+      "width": 1152,
+      "height": 2048,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "floral",
+          "geometrico"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 8,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 129420
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 93970
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 79217
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 55042
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 23421
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 15608
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 53636
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 36028
+        }
+      ]
+    },
+    {
+      "id": "img_BoLWPkeKIaGP",
+      "filename": "Image (19).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (19).jpeg",
+      "uploadedAt": "2026-06-10T08:53:31.850Z",
+      "size": 193419,
+      "width": 1152,
+      "height": 2048,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "geometrico"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 9,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 140745
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 88014
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 74010
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 49282
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 21358
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 14090
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 48309
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 31686
+        }
+      ]
+    },
+    {
+      "id": "img_ablUIZZPJbch",
+      "filename": "Image (2).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (2).jpeg",
+      "uploadedAt": "2026-06-10T08:53:36.384Z",
+      "size": 58732,
+      "width": 768,
+      "height": 1024,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": true,
+        "gallery": false,
+        "pressOnPackages": []
+      },
+      "carouselOrder": 1,
+      "galleryOrder": 0,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 60903
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 54102
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 60903
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 54102
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 29227
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 16488
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 59815
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 37088
+        }
+      ]
+    },
+    {
+      "id": "img_hme4FiCjZcng",
+      "filename": "Image (20).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (20).jpeg",
+      "uploadedAt": "2026-06-10T08:53:45.917Z",
+      "size": 219892,
+      "width": 1152,
+      "height": 2048,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "geometrico",
+          "baby-boomer"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 10,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 167076
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 119386
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 103434
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 66280
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 27964
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 17002
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 68399
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 41514
+        }
+      ]
+    },
+    {
+      "id": "img_Y12vNnqtSaiM",
+      "filename": "Image (21).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (21).jpeg",
+      "uploadedAt": "2026-06-10T08:53:56.239Z",
+      "size": 849251,
+      "width": 3840,
+      "height": 5120,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "baby-boomer"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 11,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 115178
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 80520
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 64789
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 46216
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 19020
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 12602
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 42277
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 29414
+        }
+      ]
+    },
+    {
+      "id": "img_tIjtXHGQdfLV",
+      "filename": "Image (22).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (22).jpeg",
+      "uploadedAt": "2026-06-10T08:54:00.524Z",
+      "size": 41334,
+      "width": 768,
+      "height": 1024,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": true,
+        "gallery": false,
+        "pressOnPackages": []
+      },
+      "carouselOrder": 2,
+      "galleryOrder": 0,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 39787
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 33718
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 39787
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 33718
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 18370
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 11728
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 35317
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 24714
+        }
+      ]
+    },
+    {
+      "id": "img_6StuShaF0JV7",
+      "filename": "Image (23).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (23).jpeg",
+      "uploadedAt": "2026-06-10T08:54:05.218Z",
+      "size": 44981,
+      "width": 768,
+      "height": 1024,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": [
+          "baby-boomer"
+        ]
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 12,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 44325
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 36788
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 44325
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 36788
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 19342
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 11998
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 39480
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 25896
+        }
+      ]
+    },
+    {
+      "id": "img_aFzmDTzx40g1",
+      "filename": "Image (24).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (24).jpeg",
+      "uploadedAt": "2026-06-10T08:54:09.910Z",
+      "size": 39234,
+      "width": 768,
+      "height": 1024,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": []
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 13,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 36243
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 29828
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 36243
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 29828
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 15821
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 9846
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 32445
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 21330
+        }
+      ]
+    },
+    {
+      "id": "img_S9CyxjoH6yqy",
+      "filename": "Image (25).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (25).jpeg",
+      "uploadedAt": "2026-06-10T08:54:18.190Z",
+      "size": 236185,
+      "width": 1536,
+      "height": 2048,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": []
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 14,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 111475
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 74980
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 61994
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 40568
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 18695
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 11924
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 41203
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 27052
+        }
+      ]
+    },
+    {
+      "id": "img_R8zZn173jt_X",
+      "filename": "Image (3).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (3).jpeg",
+      "uploadedAt": "2026-06-10T08:54:22.620Z",
+      "size": 49631,
+      "width": 768,
+      "height": 1024,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": true,
+        "gallery": false,
+        "pressOnPackages": []
+      },
+      "carouselOrder": 3,
+      "galleryOrder": 0,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 50103
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 45622
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 50103
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 45622
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 22025
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 14456
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 45651
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 31514
+        }
+      ]
+    },
+    {
+      "id": "img_-tTx_vVSz8F-",
+      "filename": "Image (4).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (4).jpeg",
+      "uploadedAt": "2026-06-10T08:54:27.207Z",
+      "size": 45564,
+      "width": 768,
+      "height": 1024,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": true,
+        "gallery": false,
+        "pressOnPackages": []
+      },
+      "carouselOrder": 4,
+      "galleryOrder": 0,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 46720
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 40426
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 46720
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 40426
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 21345
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 13954
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 41821
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 28890
+        }
+      ]
+    },
+    {
+      "id": "img_rV2phhGDL2Zg",
+      "filename": "Image (5).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (5).jpeg",
+      "uploadedAt": "2026-06-10T08:54:35.637Z",
+      "size": 144428,
+      "width": 1200,
+      "height": 1600,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": true,
+        "gallery": false,
+        "pressOnPackages": []
+      },
+      "carouselOrder": 5,
+      "galleryOrder": 0,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 120818
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 98048
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 80830
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 52790
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 24188
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 14342
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 54613
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 33970
+        }
+      ]
+    },
+    {
+      "id": "img_R0yL_NgHHPsR",
+      "filename": "Image (6).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (6).jpeg",
+      "uploadedAt": "2026-06-10T08:54:40.438Z",
+      "size": 42753,
+      "width": 768,
+      "height": 1024,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": []
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 15,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 42672
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 35746
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 42672
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 35746
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 18740
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 11818
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 38472
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 25888
+        }
+      ]
+    },
+    {
+      "id": "img_h39HV65o7Cb6",
+      "filename": "Image (7).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (7).jpeg",
+      "uploadedAt": "2026-06-10T08:54:44.946Z",
+      "size": 39345,
+      "width": 768,
+      "height": 1024,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": []
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 16,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 38073
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 31692
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 38073
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 31692
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 17269
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 10684
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 34212
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 22750
+        }
+      ]
+    },
+    {
+      "id": "img_6ON1k0OAwuSv",
+      "filename": "Image (8).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (8).jpeg",
+      "uploadedAt": "2026-06-10T08:54:53.472Z",
+      "size": 214611,
+      "width": 1152,
+      "height": 2048,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": []
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 17,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 164523
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 121726
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 104753
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 65868
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 27355
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 17246
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 65910
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 41738
+        }
+      ]
+    },
+    {
+      "id": "img__ZtJh-mprirD",
+      "filename": "Image (9).jpeg",
+      "originalPath": "src/assets/grid_gallery/Image (9).jpeg",
+      "uploadedAt": "2026-06-10T08:55:01.344Z",
+      "size": 157193,
+      "width": 1152,
+      "height": 2048,
+      "alt": "Image",
+      "tags": [],
+      "caption": "",
+      "hidden": false,
+      "usedIn": {
+        "carousel": false,
+        "gallery": true,
+        "pressOnPackages": []
+      },
+      "carouselOrder": 0,
+      "galleryOrder": 18,
+      "variants": [
+        {
+          "width": 1200,
+          "format": "avif",
+          "filename": "1200.avif",
+          "size": 88718
+        },
+        {
+          "width": 1200,
+          "format": "webp",
+          "filename": "1200.webp",
+          "size": 73762
+        },
+        {
+          "width": 800,
+          "format": "avif",
+          "filename": "800.avif",
+          "size": 54278
+        },
+        {
+          "width": 800,
+          "format": "webp",
+          "filename": "800.webp",
+          "size": 45140
+        },
+        {
+          "width": 400,
+          "format": "avif",
+          "filename": "400.avif",
+          "size": 20436
+        },
+        {
+          "width": 400,
+          "format": "webp",
+          "filename": "400.webp",
+          "size": 16194
+        },
+        {
+          "width": 600,
+          "format": "avif",
+          "filename": "600.avif",
+          "size": 39295
+        },
+        {
+          "width": 600,
+          "format": "webp",
+          "filename": "600.webp",
+          "size": 31678
+        }
+      ]
+    }
+  ],
+  "pressOnPackages": [
+    {
+      "id": "french-tip",
+      "name": "French Tip",
+      "description": "Clásico y elegante diseño con punta blanca.",
+      "basePrice": 35,
+      "heroImageId": "img_K5HMzz0Ic0f7",
+      "imageIds": [
+        "img_K5HMzz0Ic0f7",
+        "img_FuVmrzrwEs_9",
+        "img_p36Vn0p2vhuS"
+      ],
+      "order": 0,
+      "hidden": false
+    },
+    {
+      "id": "marmol",
+      "name": "Mármol",
+      "description": "Elegante efecto mármol en tonos neutros.",
+      "basePrice": 40,
+      "heroImageId": "img_p36Vn0p2vhuS",
+      "imageIds": [
+        "img_p36Vn0p2vhuS",
+        "img_GbVdABkrurWh",
+        "img_MSx0Ju3JfzLZ"
+      ],
+      "order": 1,
+      "hidden": false
+    },
+    {
+      "id": "glitter",
+      "name": "Glitter",
+      "description": "Brillo y glamour con glitter iridiscente.",
+      "basePrice": 35,
+      "heroImageId": "img_MSx0Ju3JfzLZ",
+      "imageIds": [
+        "img_MSx0Ju3JfzLZ",
+        "img_bsjUSxhAM7SO",
+        "img_rI4g_lNH30YV"
+      ],
+      "order": 2,
+      "hidden": false
+    },
+    {
+      "id": "floral",
+      "name": "Floral",
+      "description": "Decoración floral delicada y femenina.",
+      "basePrice": 38,
+      "heroImageId": "img_rI4g_lNH30YV",
+      "imageIds": [
+        "img_rI4g_lNH30YV",
+        "img_HQeD2ec3cRNa",
+        "img_N6rdLs2jE0UG"
+      ],
+      "order": 3,
+      "hidden": false
+    },
+    {
+      "id": "geometrico",
+      "name": "Geométrico",
+      "description": "Líneas y formas geométricas modernas.",
+      "basePrice": 38,
+      "heroImageId": "img_N6rdLs2jE0UG",
+      "imageIds": [
+        "img_N6rdLs2jE0UG",
+        "img_BoLWPkeKIaGP",
+        "img_hme4FiCjZcng"
+      ],
+      "order": 4,
+      "hidden": false
+    },
+    {
+      "id": "baby-boomer",
+      "name": "Baby Boomer",
+      "description": "Degradado suave de blanco a nude natural.",
+      "basePrice": 40,
+      "heroImageId": "img_hme4FiCjZcng",
+      "imageIds": [
+        "img_hme4FiCjZcng",
+        "img_Y12vNnqtSaiM",
+        "img_6StuShaF0JV7"
+      ],
+      "order": 5,
+      "hidden": false
+    }
+  ],
+  "optimization": {
+    "carousel": {
+      "widths": [
+        1200,
+        800
+      ],
+      "formats": [
+        "avif",
+        "webp"
+      ],
+      "quality": 80,
+      "fit": "cover"
+    },
+    "gallery": {
+      "widths": [
+        400,
+        800
+      ],
+      "formats": [
+        "avif",
+        "webp"
+      ],
+      "quality": 75,
+      "fit": "cover"
+    },
+    "pressOn": {
+      "widths": [
+        600,
+        1200
+      ],
+      "formats": [
+        "avif",
+        "webp"
+      ],
+      "quality": 80,
+      "fit": "cover"
+    }
+  },
+  "updatedAt": "2026-06-10T08:59:40.664Z"
+}

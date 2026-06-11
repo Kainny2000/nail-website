@@ -1,0 +1,203 @@
+---
+import AdminLayout from "../../components/admin/AdminLayout.astro";
+import PreviewFrame from "../../components/admin/PreviewFrame.astro";
+import { readManifest } from "../../lib/admin/manifest";
+import "../../styles/admin/carousel-editor.css";
+
+const m = await readManifest();
+const active = m.images
+  .filter((i) => i.usedIn.carousel)
+  .sort((a, b) => a.carouselOrder - b.carouselOrder);
+const available = m.images
+  .filter((i) => !i.usedIn.carousel && !i.hidden)
+  .sort((a, b) => a.filename.localeCompare(b.filename));
+---
+<AdminLayout title="Carousel" active="carousel">
+  <div slot="topbar-right" class="ce-topbar">
+    <button class="btn" id="ce-save">💾 Guardar</button>
+    <span class="ce-saved-indicator" id="ce-saved-indicator" hidden>✓ Guardado</span>
+    <button class="btn" id="ce-preview-toggle">👁 Preview</button>
+  </div>
+
+  <p class="ce-hint">Arrastra imágenes al panel <strong>Activas</strong> para incluirlas en el carrusel del home. La primera es la imagen principal (hero).</p>
+
+  <div class="ce-layout">
+    <div class="ce-pane">
+      <div class="ce-pane-header">
+        <h3>Activas <span class="ce-pane-count" id="ce-active-count">{active.length}</span></h3>
+      </div>
+      <div class="ce-list" id="ce-active-list" data-zone="active">
+        {active.map((img) => (
+          <div class="ce-card" data-id={img.id}>
+            <div class="ce-card-handle">⋮⋮</div>
+            <img src={`/optimized/${img.id}/400.webp`} alt={img.alt} loading="lazy" />
+            <div class="ce-card-info">
+              <div class="ce-card-name">{img.filename}</div>
+              <div class="ce-card-alt">{img.alt}</div>
+            </div>
+            <button class="ce-card-remove" data-action="remove" title="Quitar del carrusel">×</button>
+          </div>
+        ))}
+        {active.length === 0 && (
+          <div class="ce-empty">Arrastra imágenes aquí</div>
+        )}
+      </div>
+    </div>
+
+    <div class="ce-pane">
+      <div class="ce-pane-header">
+        <h3>Disponibles <span class="ce-pane-count">{available.length}</span></h3>
+        <input type="search" class="ce-filter" id="ce-filter" placeholder="Filtrar…" />
+      </div>
+      <div class="ce-list ce-list-available" id="ce-available-list" data-zone="available">
+        {available.map((img) => (
+          <div class="ce-card ce-card-available" data-id={img.id}>
+            <div class="ce-card-handle">⋮⋮</div>
+            <img src={`/optimized/${img.id}/400.webp`} alt={img.alt} loading="lazy" />
+            <div class="ce-card-info">
+              <div class="ce-card-name">{img.filename}</div>
+              <div class="ce-card-alt">{img.alt}</div>
+            </div>
+            <button class="ce-card-add" data-action="add" title="Añadir al carrusel">+</button>
+          </div>
+        ))}
+        {available.length === 0 && (
+          <div class="ce-empty">Sin imágenes disponibles. Sube más en Image Library.</div>
+        )}
+      </div>
+    </div>
+
+    <PreviewFrame src="/" label="Preview del home" />
+  </div>
+
+  <script>
+    // @ts-nocheck
+    import Sortable from 'sortablejs';
+
+    const activeList = document.getElementById('ce-active-list');
+    const availableList = document.getElementById('ce-available-list');
+    const saveBtn = document.getElementById('ce-save');
+    const savedIndicator = document.getElementById('ce-saved-indicator');
+    const previewToggle = document.getElementById('ce-preview-toggle');
+    const previewFrame = document.getElementById('admin-preview-frame');
+    const activeCount = document.getElementById('ce-active-count');
+    const filterInput = document.getElementById('ce-filter');
+
+    let dirty = false;
+
+    function markDirty() {
+      dirty = true;
+      savedIndicator.hidden = true;
+      saveBtn.classList.add('btn-primary');
+    }
+
+    function markClean() {
+      dirty = false;
+      savedIndicator.hidden = false;
+      saveBtn.classList.remove('btn-primary');
+    }
+
+    new Sortable(activeList, {
+      group: 'carousel',
+      animation: 150,
+      handle: '.ce-card-handle',
+      ghostClass: 'ce-card-ghost',
+      onUpdate: markDirty,
+      onAdd: markDirty,
+      onRemove: markDirty,
+    });
+
+    new Sortable(availableList, {
+      group: 'carousel',
+      animation: 150,
+      handle: '.ce-card-handle',
+      ghostClass: 'ce-card-ghost',
+      filter: '.ce-card-add',
+      preventOnFilter: false,
+      onAdd: (e) => {
+        const card = e.item;
+        const btn = card.querySelector('[data-action="add"]');
+        if (btn) { btn.dataset.action = 'remove'; btn.textContent = '×'; btn.title = 'Quitar del carrusel'; btn.classList.remove('ce-card-add'); btn.classList.add('ce-card-remove'); }
+        markDirty();
+      },
+    });
+
+    function refresh() {
+      const cards = activeList.querySelectorAll('.ce-card');
+      activeCount.textContent = String(cards.length);
+    }
+
+    activeList.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const card = btn.closest('.ce-card');
+      if (btn.dataset.action === 'remove') {
+        availableList.appendChild(card);
+        btn.dataset.action = 'add';
+        btn.textContent = '+';
+        btn.title = 'Añadir al carrusel';
+        btn.classList.remove('ce-card-remove');
+        btn.classList.add('ce-card-add');
+        markDirty();
+        refresh();
+      }
+    });
+
+    availableList.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action="add"]');
+      if (!btn) return;
+      const card = btn.closest('.ce-card');
+      activeList.appendChild(card);
+      btn.dataset.action = 'remove';
+      btn.textContent = '×';
+      btn.title = 'Quitar del carrusel';
+      btn.classList.remove('ce-card-add');
+      btn.classList.add('ce-card-remove');
+      markDirty();
+      refresh();
+    });
+
+    filterInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      availableList.querySelectorAll('.ce-card').forEach((c) => {
+        const txt = c.textContent.toLowerCase();
+        c.style.display = txt.includes(q) ? '' : 'none';
+      });
+    });
+
+    saveBtn.addEventListener('click', async () => {
+      const order = [...activeList.querySelectorAll('.ce-card')].map((c) => c.dataset.id);
+      const r = await fetch('/api/admin/carousel', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ order }),
+      });
+      if (r.ok) {
+        markClean();
+        window.adminToast(`Guardado · ${order.length} activa(s)`, 'success');
+        reloadPreview();
+      } else {
+        window.adminToast('Error al guardar', 'error');
+      }
+    });
+
+    previewToggle.addEventListener('click', () => {
+      const visible = !previewFrame.hidden;
+      previewFrame.hidden = visible;
+      previewToggle.textContent = visible ? '👁 Preview' : '✕ Cerrar preview';
+    });
+
+    function reloadPreview() {
+      const iframe = document.getElementById('admin-preview-iframe');
+      if (iframe && !previewFrame.hidden) {
+        iframe.src = iframe.src.split('?')[0] + '?t=' + Date.now();
+      }
+    }
+
+    window.addEventListener('beforeunload', (e) => {
+      if (dirty) { e.preventDefault(); e.returnValue = ''; }
+    });
+
+    refresh();
+  </script>
+</AdminLayout>
