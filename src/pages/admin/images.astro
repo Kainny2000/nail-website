@@ -17,7 +17,7 @@ const allTags = [...new Set(manifest.images.flatMap((i) => i.tags))].sort();
         />
       </div>
       <button class="btn btn-primary" id="lib-upload-btn">+ Subir imágenes</button>
-      <input type="file" id="lib-upload-input" multiple accept="image/jpeg,image/png,image/webp" hidden />
+      <input type="file" id="lib-upload-input" multiple accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" hidden />
     </div>
 
     <div class="lib-toolbar-right">

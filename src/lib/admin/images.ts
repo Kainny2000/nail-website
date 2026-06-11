@@ -1,4 +1,5 @@
 import sharp from 'sharp';
+import heicConvert from 'heic-convert';
 import { mkdir, rm, writeFile, stat, access } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import path from 'node:path';
@@ -13,24 +14,45 @@ export async function fileExists(p: string): Promise<boolean> {
   try { await access(p, constants.F_OK); return true; } catch { return false; }
 }
 
-const MIME_SIGNATURES: Record<string, number[][]> = {
+type Signature = number[] | string[];
+
+const PREFIX_SIGNATURES: Record<string, Signature[]> = {
   'image/jpeg': [[0xff, 0xd8, 0xff]],
   'image/png': [[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]],
   'image/webp': [[0x52, 0x49, 0x46, 0x46]],
 };
 
+const HEIC_BRANDS = new Set(['heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1']);
+
+function matchFtyp(buf: Buffer): string | null {
+  if (buf.length < 12) return null;
+  if (buf[4] !== 0x66 || buf[5] !== 0x74 || buf[6] !== 0x79 || buf[7] !== 0x70) return null;
+  const brand = String.fromCharCode(buf[8], buf[9], buf[10], buf[11]).toLowerCase();
+  return HEIC_BRANDS.has(brand) ? 'image/heic' : null;
+}
+
+function matchPrefix(buf: Buffer, sig: number[]): boolean {
+  if (buf.length < sig.length) return false;
+  for (let i = 0; i < sig.length; i++) {
+    if (buf[i] !== sig[i]) return false;
+  }
+  return true;
+}
+
 export async function sniffMime(buf: Buffer): Promise<string | null> {
-  for (const [mime, sigs] of Object.entries(MIME_SIGNATURES)) {
+  for (const [mime, sigs] of Object.entries(PREFIX_SIGNATURES)) {
     for (const sig of sigs) {
-      if (buf.length < sig.length) continue;
-      let ok = true;
-      for (let i = 0; i < sig.length; i++) {
-        if (buf[i] !== sig[i]) { ok = false; break; }
-      }
-      if (ok) return mime;
+      if (matchPrefix(buf, sig as number[])) return mime;
     }
   }
+  const ftyp = matchFtyp(buf);
+  if (ftyp) return ftyp;
   return null;
+}
+
+export async function heicToJpeg(buf: Buffer): Promise<Buffer> {
+  const out = await heicConvert({ buffer: buf, format: 'JPEG', quality: 0.92 });
+  return Buffer.from(out);
 }
 
 export function sanitizeFilename(name: string): string {

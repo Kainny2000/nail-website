@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { GRID_GALLERY_DIR, ensureDirs } from './manifest';
-import { sniffMime, sanitizeFilename, ensureUniqueFilename, probeImage, makeId, generateVariants } from './images';
+import { sniffMime, sanitizeFilename, ensureUniqueFilename, probeImage, makeId, generateVariants, heicToJpeg } from './images';
 import { readManifest, writeManifest } from './manifest';
 import type { AdminImage, OptimizationProfile } from './types';
 
@@ -21,11 +21,20 @@ export async function processUpload(file: File): Promise<UploadResult | UploadEr
   if (file.size > MAX_BYTES) return { ok: false, error: `File exceeds ${MAX_BYTES / 1024 / 1024}MB limit` };
   if (file.size === 0) return { ok: false, error: 'Empty file' };
 
-  const buf = Buffer.from(await file.arrayBuffer());
-  const mime = await sniffMime(buf);
-  if (!mime) return { ok: false, error: 'Unsupported file type (must be JPEG, PNG, or WebP)' };
+  let buf = Buffer.from(await file.arrayBuffer());
+  let mime = await sniffMime(buf);
+  if (!mime) return { ok: false, error: 'Unsupported file type (must be JPEG, PNG, WebP, or HEIC)' };
 
-  const ext = (mime.split('/')[1] || 'jpeg').replace('jpeg', 'jpeg');
+  if (mime === 'image/heic' || mime === 'image/heif') {
+    try {
+      buf = await heicToJpeg(buf);
+      mime = 'image/jpeg';
+    } catch (err: any) {
+      return { ok: false, error: 'Failed to convert HEIC: ' + (err?.message ?? 'unknown error') };
+    }
+  }
+
+  const ext = mime === 'image/jpeg' ? 'jpeg' : (mime.split('/')[1] || 'jpeg');
   const safeBase = sanitizeFilename(file.name.replace(/\.[^.]+$/, ''));
   const desired = `${safeBase}.${ext}`;
 
