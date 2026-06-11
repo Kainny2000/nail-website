@@ -99,3 +99,111 @@
   color: #888;
   line-height: 1.4;
 }
+
+.press-on-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.press-on-card:hover .press-on-card-img {
+  transform: scale(1.05);
+}
+
+.press-on-card-extra {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.press-on-card-price {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--admin-accent, #f5b7c1);
+  font-weight: 600;
+}
+
+.press-on-empty, .gallery-empty, .slideshow-empty {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: var(--admin-text-faint, #71717a);
+}
+
+.press-on-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.press-on-lightbox[hidden] {
+  display: none;
+}
+
+.press-on-lightbox-image-wrap {
+  max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.press-on-lightbox-image-wrap img {
+  max-width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.press-on-lightbox-close,
+.press-on-lightbox-prev,
+.press-on-lightbox-next {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 1.5rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.press-on-lightbox-close { top: 1.5rem; right: 1.5rem; }
+.press-on-lightbox-prev { left: 1.5rem; top: 50%; transform: translateY(-50%); }
+.press-on-lightbox-next { right: 1.5rem; top: 50%; transform: translateY(-50%); }
+
+.press-on-lightbox-close:hover,
+.press-on-lightbox-prev:hover,
+.press-on-lightbox-next:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.press-on-lightbox-counter {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 0.9rem;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+}
