@@ -1,7 +1,6 @@
 ---
 import AdminLayout from "../../components/admin/AdminLayout.astro";
 import { readManifest } from "../../lib/admin/manifest";
-import "../../styles/admin/image-library.css";
 
 const manifest = await readManifest();
 const allTags = [...new Set(manifest.images.flatMap((i) => i.tags))].sort();

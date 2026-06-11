@@ -2,7 +2,6 @@
 import { runMigration } from "../../lib/admin/migration";
 import { readManifest } from "../../lib/admin/migration";
 import AdminLayout from "../../components/admin/AdminLayout.astro";
-import "../../styles/admin/dashboard.css";
 
 let manifest: Awaited<ReturnType<typeof readManifest>> | null = null;
 let migrationRan = false;
