@@ -1,0 +1,23 @@
+---
+interface Props {
+  src: string;
+  label: string;
+}
+const { src, label } = Astro.props;
+---
+<aside class="admin-preview" id="admin-preview-frame" hidden>
+  <div class="admin-preview-header">
+    <span class="admin-preview-label">{label}</span>
+    <button class="admin-preview-reload" data-preview-reload title="Recargar">↻</button>
+    <a class="admin-preview-open" href={src} target="_blank" title="Abrir en nueva pestaña">↗</a>
+  </div>
+  <iframe id="admin-preview-iframe" src={src + (src.includes('?') ? '&' : '?') + 'admin_preview=1'} class="admin-preview-iframe"></iframe>
+</aside>
+
+<script>
+  // @ts-nocheck
+  document.querySelector('[data-preview-reload]')?.addEventListener('click', () => {
+    const iframe = document.getElementById('admin-preview-iframe');
+    if (iframe) iframe.src = iframe.src.split('?')[0] + '?t=' + Date.now();
+  });
+</script>
