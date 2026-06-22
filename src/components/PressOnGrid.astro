@@ -1,22 +1,17 @@
 ---
 import PressOnCard from "./PressOnCard.astro";
-import { getPressOnPackagesWithImages } from "../lib/admin/public-queries";
+import { pressOnPackages } from "../data/press-on";
 import "../styles/components/press-on-card.css";
-import type { PublicPackage } from "../lib/admin/public-queries";
-
-const packages: PublicPackage[] = await getPressOnPackagesWithImages();
 ---
 
 <div class="press-on-wrapper">
-  {packages.length === 0 ? (
-    <div class="press-on-empty">
-      <p>Aún no hay paquetes de press-on publicados.</p>
-    </div>
-  ) : (
-    <div class="press-on-grid">
-      {packages.map((pkg) => (
-        <PressOnCard pkg={pkg} />
-      ))}
-    </div>
-  )}
+  <div class="press-on-grid">
+    {pressOnPackages.map((pkg) => (
+      <PressOnCard
+        id={pkg.id}
+        name={pkg.name}
+        description={pkg.description}
+      />
+    ))}
+  </div>
 </div>

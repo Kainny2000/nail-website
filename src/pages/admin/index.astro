@@ -1,71 +1,446 @@
 ---
-import { runMigration } from "../../lib/admin/migration";
-import { readManifest } from "../../lib/admin/migration";
-import AdminLayout from "../../components/admin/AdminLayout.astro";
+import Layout from "../../layouts/Layout.astro";
+import {
+  totpStatus,
+} from "../../server/lib/auth";
+import { getManifest } from "../../server/lib/storage";
+import { randomToken } from "../../server/lib/crypto";
 
-let manifest: Awaited<ReturnType<typeof readManifest>> | null = null;
-let migrationRan = false;
+const session = Astro.locals.session;
+const pre = Astro.locals.pre;
+const ip = Astro.locals.ip;
+
+let totpEnrolled = false;
 try {
-  manifest = await readManifest();
-} catch {
-  manifest = await runMigration();
-  migrationRan = true;
+  totpEnrolled = await totpStatus();
+} catch (err) {
+  console.error("admin: totp status failed", err);
 }
 
-const stats = manifest
-  ? {
-      total: manifest.images.length,
-      carousel: manifest.images.filter((i) => i.usedIn.carousel).length,
-      gallery: manifest.images.filter((i) => i.usedIn.gallery).length,
-      pressOn: manifest.images.filter((i) => i.usedIn.pressOnPackages.length > 0).length,
-      hidden: manifest.images.filter((i) => i.hidden).length,
-      unused: manifest.images.filter((i) => !i.usedIn.carousel && !i.usedIn.gallery && i.usedIn.pressOnPackages.length === 0).length,
-      packages: manifest.pressOnPackages.length,
-    }
-  : null;
+let manifest = [];
+try {
+  manifest = await getManifest();
+} catch (err) {
+  console.error("admin: manifest read failed", err);
+}
+
+let csrfCookie = Astro.cookies.get("__nail_csrf")?.value ?? "";
+if (session && !csrfCookie) {
+  csrfCookie = randomToken(24);
+  Astro.cookies.set("__nail_csrf", csrfCookie, {
+    httpOnly: false,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60,
+  });
+}
+
+const needsLogin = !session;
+const needsTotp = !!pre && !session;
+const needsTotpSetup = !!session && !totpEnrolled;
+const ready = !!session && totpEnrolled;
 ---
-<AdminLayout title="Dashboard" active="dashboard">
-  {migrationRan && (
-    <div class="migration-banner">
-      ✓ Migración inicial completada — 25 imágenes importadas, 6 paquetes press-on creados.
-    </div>
-  )}
+<Layout title="Admin | Bare Form">
+  <main class="admin-shell">
+    <header class="admin-header">
+      <a href="/" class="admin-home">← Sitio</a>
+      <h1>Admin</h1>
+      {session && (
+        <div class="admin-user">
+          <span>{session.login}</span>
+          <form method="post" action="/api/auth/logout" class="logout-form">
+            <input type="hidden" name="csrf" value={csrfCookie} />
+            <button type="submit" class="btn-secondary">Salir</button>
+          </form>
+        </div>
+      )}
+    </header>
 
-  <div class="dashboard-grid">
-    <a href="/admin/images" class="dash-tile">
-      <div class="dash-tile-icon">🖼️</div>
-      <div class="dash-tile-body">
-        <div class="dash-tile-title">Image Library</div>
-        <div class="dash-tile-sub">{stats?.total ?? 0} imágenes · {stats?.hidden ?? 0} ocultas</div>
-      </div>
-      <div class="dash-tile-arrow">→</div>
-    </a>
+    {needsLogin && (
+      <section class="card">
+        <h2>Iniciar sesión</h2>
+        <form id="login-form" autocomplete="on">
+          <label>Usuario
+            <input name="username" type="text" required autocomplete="username" />
+          </label>
+          <label>Contraseña
+            <input name="password" type="password" required autocomplete="current-password" />
+          </label>
+          <button type="submit" class="btn-primary">Continuar</button>
+          <p class="form-msg" id="login-msg"></p>
+        </form>
+      </section>
+    )}
 
-    <a href="/admin/carousel" class="dash-tile">
-      <div class="dash-tile-icon">🎠</div>
-      <div class="dash-tile-body">
-        <div class="dash-tile-title">Carousel</div>
-        <div class="dash-tile-sub">{stats?.carousel ?? 0} activas</div>
-      </div>
-      <div class="dash-tile-arrow">→</div>
-    </a>
+    {needsTotp && (
+      <section class="card">
+        <h2>Código de verificación (2FA)</h2>
+        <form id="totp-form">
+          <label>Código de 6 dígitos
+            <input name="code" type="text" inputmode="numeric" pattern="\d{6}" maxlength="6" required autocomplete="one-time-code" />
+          </label>
+          <button type="submit" class="btn-primary">Verificar</button>
+          <p class="form-msg" id="totp-msg"></p>
+        </form>
+      </section>
+    )}
 
-    <a href="/admin/gallery" class="dash-tile">
-      <div class="dash-tile-icon">🪞</div>
-      <div class="dash-tile-body">
-        <div class="dash-tile-title">Gallery</div>
-        <div class="dash-tile-sub">{stats?.gallery ?? 0} visibles · {stats?.unused ?? 0} sin usar</div>
-      </div>
-      <div class="dash-tile-arrow">→</div>
-    </a>
+    {needsTotpSetup && (
+      <section class="card" id="totp-setup-card">
+        <h2>Configurar 2FA (Authenticator App)</h2>
+        <p class="muted">Escanea el QR con Google Authenticator, 1Password, Authy o Bitwarden, y luego ingresa el código de 6 dígitos para confirmar.</p>
+        <div id="qr-area"><p>Cargando…</p></div>
+        <form id="totp-setup-form" class="hidden">
+          <label>Código de la app
+            <input name="code" type="text" inputmode="numeric" pattern="\d{6}" maxlength="6" required />
+          </label>
+          <input type="hidden" name="secret" id="totp-secret-input" />
+          <button type="submit" class="btn-primary">Activar 2FA</button>
+          <p class="form-msg" id="totp-setup-msg"></p>
+        </form>
+      </section>
+    )}
 
-    <a href="/admin/press-on" class="dash-tile">
-      <div class="dash-tile-icon">💅</div>
-      <div class="dash-tile-body">
-        <div class="dash-tile-title">Press-On</div>
-        <div class="dash-tile-sub">{stats?.packages ?? 0} paquetes</div>
-      </div>
-      <div class="dash-tile-arrow">→</div>
-    </a>
-  </div>
-</AdminLayout>
+    {ready && (
+      <>
+        <section class="card">
+          <h2>Subir imagen nueva</h2>
+          <form id="upload-form">
+            <label>Archivo (JPG / PNG / WebP, máx 8 MB)
+              <input name="file" type="file" accept="image/jpeg,image/png,image/webp" required />
+            </label>
+            <label>Texto alternativo (opcional)
+              <input name="alt" type="text" maxlength="200" placeholder="Nail Art" />
+            </label>
+            <button type="submit" class="btn-primary">Subir</button>
+            <p class="form-msg" id="upload-msg"></p>
+          </form>
+          <p class="muted">Las imágenes se redimensionan a 1600 px de ancho y se convierten a WebP en el servidor. Se guardan en disco local; la primera copia de seguridad al repo privado de GitHub se hace automáticamente en 4 horas.</p>
+        </section>
+
+        <section class="card">
+          <h2>Imágenes del slideshow ({manifest.length})</h2>
+          <p class="muted">Arrastra para reordenar. La primera es la imagen principal del slideshow en la página de inicio.</p>
+          <ul id="image-list" class="image-list">
+            {manifest.map((item, idx) => (
+              <li class="image-tile" draggable="true" data-id={item.id}>
+                <span class="image-pos">{idx + 1}</span>
+                <img src={`/api/uploads/${item.filename}`} alt={item.alt} loading="lazy" />
+                <div class="image-meta">
+                  <span class="image-name" title={item.filename}>{item.filename}</span>
+                  <span class="image-date">{new Date(item.addedAt).toLocaleString()}</span>
+                </div>
+                <button class="btn-danger image-delete" data-id={item.id} data-name={item.filename}>Eliminar</button>
+              </li>
+            ))}
+            {manifest.length === 0 && (
+              <li class="empty">No hay imágenes todavía. Sube la primera arriba.</li>
+            )}
+          </ul>
+          <p class="form-msg" id="order-msg"></p>
+        </section>
+      </>
+    )}
+  </main>
+
+  <script is:inline define:vars={{ csrfCookie, needsLogin, needsTotp, needsTotpSetup, ready, ip }}>
+    window.__NAIL__ = { csrfCookie, needsLogin, needsTotp, needsTotpSetup, ready };
+  </script>
+</Layout>
+
+<style>
+  .admin-shell {
+    max-width: 960px;
+    margin: 5rem auto 3rem;
+    padding: 1rem;
+    color: #eee;
+  }
+  .admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+  .admin-header h1 { font-size: 1.5rem; margin: 0; }
+  .admin-home, .admin-user a { color: #fff; opacity: 0.8; }
+  .admin-user { display: flex; align-items: center; gap: 1rem; }
+  .logout-form { margin: 0; }
+  .card {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .card h2 { margin-top: 0; font-size: 1.1rem; }
+  label {
+    display: block;
+    margin: 0.75rem 0;
+    font-size: 0.9rem;
+    color: #ccc;
+  }
+  input[type="text"], input[type="password"], input[type="file"] {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #fff;
+    margin-top: 0.25rem;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+  input[type="file"] { padding: 0.4rem; }
+  .btn-primary, .btn-secondary, .btn-danger {
+    border: 0;
+    border-radius: 6px;
+    padding: 0.55rem 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+  .btn-primary { background: #fff; color: #000; }
+  .btn-primary:hover { background: #ddd; }
+  .btn-secondary { background: #333; color: #fff; }
+  .btn-danger { background: #b00; color: #fff; }
+  .btn-danger:hover { background: #d00; }
+  .form-msg { color: #f88; margin: 0.5rem 0 0; min-height: 1.2em; font-size: 0.9rem; }
+  .form-msg.success { color: #8f8; }
+  .muted { color: #888; font-size: 0.85rem; }
+  .hidden { display: none; }
+  .image-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .image-tile {
+    display: grid;
+    grid-template-columns: 2rem 6rem 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: #1a1a1a;
+    border: 1px solid #222;
+    border-radius: 8px;
+    cursor: grab;
+  }
+  .image-tile.dragging { opacity: 0.4; }
+  .image-tile.drag-over { border-color: #fff; }
+  .image-pos { font-weight: 700; text-align: center; }
+  .image-tile img {
+    width: 6rem; height: 4rem;
+    object-fit: cover; border-radius: 4px;
+  }
+  .image-meta { display: flex; flex-direction: column; min-width: 0; }
+  .image-name { font-size: 0.85rem; color: #ccc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .image-date { font-size: 0.75rem; color: #666; }
+  .empty { padding: 1.5rem; text-align: center; color: #666; }
+  #qr-area { display: flex; justify-content: center; padding: 1rem; }
+  #qr-area img { max-width: 240px; background: #fff; padding: 0.5rem; border-radius: 6px; }
+  @media (max-width: 640px) {
+    .image-tile { grid-template-columns: 1.5rem 4rem 1fr; }
+    .image-delete { grid-column: 1 / -1; }
+  }
+</style>
+
+<script>
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => document.querySelectorAll(sel);
+  const csrf = () => window.__NAIL__?.csrfCookie ?? "";
+  const json = async (res) => {
+    if (!res.ok) {
+      let body;
+      try { body = await res.json(); } catch { body = { error: res.statusText }; }
+      throw new Error(body.error || `HTTP ${res.status}`);
+    }
+    return res.json();
+  };
+
+  // LOGIN
+  const loginForm = $("#login-form");
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = $("#login-msg");
+      msg.textContent = "";
+      msg.classList.remove("success");
+      const data = new FormData(loginForm);
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: data.get("username"), password: data.get("password") }),
+        });
+        const body = await json(res);
+        if (body.step === "totp") {
+          window.location.reload();
+        } else if (body.step === "totp-setup-required") {
+          window.location.reload();
+        } else {
+          throw new Error("Unexpected response");
+        }
+      } catch (err) {
+        msg.textContent = err.message;
+      }
+    });
+  }
+
+  // TOTP verify
+  const totpForm = $("#totp-form");
+  if (totpForm) {
+    totpForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = $("#totp-msg");
+      msg.textContent = ""; msg.classList.remove("success");
+      const data = new FormData(totpForm);
+      try {
+        await json(await fetch("/api/auth/totp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf() },
+          body: JSON.stringify({ code: data.get("code") }),
+        }));
+        window.location.reload();
+      } catch (err) {
+        msg.textContent = err.message;
+      }
+    });
+  }
+
+  // TOTP setup
+  const setupCard = $("#totp-setup-card");
+  if (setupCard) {
+    (async () => {
+      const form = $("#totp-setup-form");
+      const area = $("#qr-area");
+      try {
+        const res = await fetch("/api/auth/setup-totp", { headers: { "X-CSRF-Token": csrf() } });
+        const body = await json(res);
+        area.innerHTML = `<img src="${body.qr}" alt="TOTP QR" /><p class="muted" style="text-align:center;word-break:break-all;">Secret: <code>${body.secret}</code></p>`;
+        $("#totp-secret-input").value = body.secret;
+        form.classList.remove("hidden");
+      } catch (err) {
+        area.innerHTML = `<p class="form-msg">${err.message}</p>`;
+      }
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const msg = $("#totp-setup-msg");
+        msg.textContent = ""; msg.classList.remove("success");
+        const data = new FormData(form);
+        try {
+          await json(await fetch("/api/auth/setup-totp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf() },
+            body: JSON.stringify({ secret: data.get("secret"), code: data.get("code") }),
+          }));
+          msg.classList.add("success");
+          msg.textContent = "2FA activado. Recargando…";
+          setTimeout(() => window.location.reload(), 800);
+        } catch (err) {
+          msg.textContent = err.message;
+        }
+      });
+    })();
+  }
+
+  // Upload
+  const uploadForm = $("#upload-form");
+  if (uploadForm) {
+    uploadForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = $("#upload-msg");
+      msg.textContent = "Subiendo…"; msg.classList.remove("success");
+      const data = new FormData(uploadForm);
+      try {
+        await json(await fetch("/api/images", {
+          method: "POST",
+          headers: { "X-CSRF-Token": csrf() },
+          body: data,
+        }));
+        msg.classList.add("success");
+        msg.textContent = "Subido. Recargando…";
+        setTimeout(() => window.location.reload(), 600);
+      } catch (err) {
+        msg.textContent = err.message;
+      }
+    });
+  }
+
+  // Delete
+  $$(".image-delete").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-id");
+      const name = btn.getAttribute("data-name");
+      if (!confirm(`¿Eliminar ${name}? Esta acción no se puede deshacer.`)) return;
+      try {
+        await json(await fetch(`/api/images/${encodeURIComponent(id)}`, {
+          method: "DELETE",
+          headers: { "X-CSRF-Token": csrf() },
+        }));
+        window.location.reload();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  });
+
+  // Drag to reorder
+  const list = $("#image-list");
+  if (list) {
+    let dragId = null;
+    list.querySelectorAll(".image-tile").forEach((tile) => {
+      tile.addEventListener("dragstart", (e) => {
+        dragId = tile.getAttribute("data-id");
+        tile.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+      });
+      tile.addEventListener("dragend", () => {
+        tile.classList.remove("dragging");
+        list.querySelectorAll(".image-tile").forEach((t) => t.classList.remove("drag-over"));
+      });
+      tile.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        tile.classList.add("drag-over");
+      });
+      tile.addEventListener("dragleave", () => tile.classList.remove("drag-over"));
+      tile.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        tile.classList.remove("drag-over");
+        if (!dragId || dragId === tile.getAttribute("data-id")) return;
+        const dragged = list.querySelector(`[data-id="${dragId}"]`);
+        if (!dragged) return;
+        const rect = tile.getBoundingClientRect();
+        const after = e.clientY > rect.top + rect.height / 2;
+        if (after) tile.after(dragged);
+        else tile.before(dragged);
+        await saveOrder();
+      });
+    });
+
+    async function saveOrder() {
+      const msg = $("#order-msg");
+      msg.textContent = "Guardando orden…"; msg.classList.remove("success");
+      const order = Array.from(list.querySelectorAll(".image-tile")).map((t) => t.getAttribute("data-id"));
+      try {
+        await json(await fetch("/api/images/order", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf() },
+          body: JSON.stringify({ order }),
+        }));
+        msg.classList.add("success");
+        msg.textContent = "Orden guardado.";
+        // refresh position numbers
+        list.querySelectorAll(".image-tile").forEach((t, i) => {
+          t.querySelector(".image-pos").textContent = String(i + 1);
+        });
+      } catch (err) {
+        msg.textContent = err.message;
+      }
+    }
+  }
+</script>

@@ -1,100 +1,34 @@
 ---
+import PictureCard from "./PictureCard.astro";
 import "../styles/components/pictures-grid.css";
-import { getGalleryImages } from "../lib/admin/public-queries";
+const picturesImported = import.meta.glob("../assets/grid_gallery/*.jpeg", {
+	eager: true,
+}) as Record<string, { default: any }>;
+const sortedKeys = Object.keys(picturesImported).sort((a, b) => {
+	const numA = parseInt(a.match(/\((\d+)\)/)?.[1] || "0");
+	const numB = parseInt(b.match(/\((\d+)\)/)?.[1] || "0");
+	return numA - numB;
+});
 
-const images = await getGalleryImages();
+const uniqueImages = [];
+const seenSources = new Set();
+
+for (const key of sortedKeys) {
+	const img = picturesImported[key];
+	if (!seenSources.has(img.default.src)) {
+		seenSources.add(img.default.src);
+		uniqueImages.push(img);
+	}
+}
+const images = uniqueImages;
 ---
 
 <div class="gallery-wrapper">
-    {images.length === 0 ? (
-        <div class="gallery-empty">
-            <p>La galería está vacía. Añade imágenes desde el panel de admin.</p>
-        </div>
-    ) : (
-        <div class="pictures-grid">
-            {images.map((image) => (
-                <button
-                    type="button"
-                    class="picture-card-wrapper"
-                    data-lightbox-src={image.url}
-                    data-lightbox-alt={image.alt}
-                    aria-label={image.alt}
-                >
-                    <div class="skeleton-loader"></div>
-                    <div class="picture-card">
-                        <img
-                            src={image.url}
-                            srcset={image.srcset}
-                            sizes="(max-width: 600px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                            alt={image.alt}
-                            width={image.width}
-                            height={image.height}
-                            loading="lazy"
-                            decoding="async"
-                            class="gallery-image"
-                        />
-                        <div class="image-overlay">
-                            <span class="zoom-icon">🔍</span>
-                        </div>
-                    </div>
-                </button>
-            ))}
-        </div>
-    )}
-
-    <div class="gallery-lightbox" id="gallery-lightbox" hidden>
-        <button class="gallery-lightbox-close" data-lightbox-close aria-label="Cerrar">×</button>
-        <button class="gallery-lightbox-prev" data-lightbox-prev aria-label="Anterior">‹</button>
-        <button class="gallery-lightbox-next" data-lightbox-next aria-label="Siguiente">›</button>
-        <img class="gallery-lightbox-img" id="gallery-lightbox-img" src="" alt="" />
-        <div class="gallery-lightbox-counter" id="gallery-lightbox-counter">1 / 1</div>
-    </div>
+	<div class="pictures-grid">
+		{
+			images.map((image) => (
+				<PictureCard src={image.default} alt="Bare Form Nail Art" />
+			))
+		}
+	</div>
 </div>
-
-<script>
-    const grid = document.querySelector('.pictures-grid');
-    const lightbox = document.getElementById('gallery-lightbox');
-    const lightboxImg = document.getElementById('gallery-lightbox-img');
-    const counter = document.getElementById('gallery-lightbox-counter');
-
-    if (grid && lightbox && lightboxImg && counter) {
-        const items = Array.from(grid.querySelectorAll('.picture-card-wrapper'));
-        let idx = 0;
-
-        const show = (i) => {
-            const item = items[i];
-            if (!item) return;
-            idx = i;
-            lightboxImg.src = item.dataset.lightboxSrc || '';
-            lightboxImg.alt = item.dataset.lightboxAlt || '';
-            counter.textContent = `${i + 1} / ${items.length}`;
-            lightbox.hidden = false;
-            document.body.style.overflow = 'hidden';
-        };
-
-        const close = () => {
-            lightbox.hidden = true;
-            lightboxImg.src = '';
-            document.body.style.overflow = '';
-        };
-
-        items.forEach((item, i) => {
-            item.addEventListener('click', () => show(i));
-        });
-
-        lightbox.querySelector('[data-lightbox-close]')?.addEventListener('click', close);
-        lightbox.querySelector('[data-lightbox-prev]')?.addEventListener('click', () => show((idx - 1 + items.length) % items.length));
-        lightbox.querySelector('[data-lightbox-next]')?.addEventListener('click', () => show((idx + 1) % items.length));
-
-        lightbox.addEventListener('click', (e) => {
-            if (e.target === lightbox) close();
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (lightbox.hidden) return;
-            if (e.key === 'Escape') close();
-            if (e.key === 'ArrowLeft') show((idx - 1 + items.length) % items.length);
-            if (e.key === 'ArrowRight') show((idx + 1) % items.length);
-        });
-    }
-</script>

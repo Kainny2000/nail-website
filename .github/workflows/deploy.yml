@@ -1,0 +1,44 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-deploy:
+    # Self-hosted runner on the home PC. The runner is an OUTBOUND connection
+    # to GitHub, so it works regardless of the box's dynamic public IP.
+    runs-on: [self-hosted, linux, x64, home]
+
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Restart PM2
+        run: |
+          if pm2 describe nail >/dev/null 2>&1; then
+            pm2 reload nail
+          else
+            pm2 start ./dist/server/entry.mjs --name nail
+            pm2 save
+          fi
+
+      - name: Health check
+        run: |
+          sleep 3
+          curl -fsS --max-time 5 http://127.0.0.1:4321/api/healthz

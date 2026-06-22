@@ -1,0 +1,35 @@
+# Caddy configuration for bareformbysh.com
+#
+# Notes:
+# - Listens on 80 and 443 on the public NIC. Caddy terminates TLS using
+#   Let's Encrypt certs obtained via DNS-01 (Porkbun), so the public IP can
+#   change without breaking cert renewal.
+# - Proxies plain HTTP to the Node app on 127.0.0.1:4321.
+# - Caddy reads /etc/caddy/caddy.env for PORKBUN_API_KEY / PORKBUN_SECRET_KEY.
+
+import /etc/caddy/caddy.env
+
+bareformbysh.com, www.bareformbysh.com {
+    encode zstd gzip
+
+    reverse_proxy 127.0.0.1:4321 {
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Real-IP {remote_host}
+    }
+
+    header {
+        # HSTS — must be over HTTPS to take effect
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Defense in depth; the app also sets these.
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        X-Frame-Options "DENY"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        # Hide the Caddy version banner
+        -Server
+    }
+
+    # Redirect apex (bareformbysh.com) to www or vice versa. Pick one.
+    @www host www.bareformbysh.com
+    redir @www https://bareformbysh.com{uri} 301
+}

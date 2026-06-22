@@ -1,27 +1,37 @@
 {
-  "name": "",
+  "name": "nail-website",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "start": "node --env-file=.env ./dist/server/entry.mjs",
+    "start:no-env": "node ./dist/server/entry.mjs",
+    "astro": "astro",
+    "hash-password": "node ./scripts/hash-password.mjs",
+    "hash-password": "node ./scripts/hash-password.mjs"
   },
   "dependencies": {
-    "@astrojs/node": "^9.4.6",
-    "astro": "^5.13.2",
-    "bcryptjs": "^3.0.3",
-    "cookie": "^1.1.1",
-    "heic-convert": "^2.1.0",
-    "nanoid": "^5.1.11",
+    "@astrojs/node": "^10.1.4",
+    "astro": "^6.4.8",
+    "bcryptjs": "^2.4.3",
+    "cookie": "^0.6.0",
+    "dotenv": "^17.4.2",
+    "otplib": "^12.0.1",
+    "qrcode": "^1.5.4",
     "sharp": "^0.34.3",
-    "sortablejs": "^1.15.7"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@types/bcryptjs": "^2.4.6",
     "@types/cookie": "^0.6.0",
-    "@types/sortablejs": "^1.15.9",
+    "@types/qrcode": "^1.5.5",
     "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

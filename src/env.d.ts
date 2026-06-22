@@ -2,14 +2,9 @@
 
 declare namespace App {
   interface Locals {
-    adminSession?: {
-      issuedAt: number;
-      expiresAt: number;
-    };
+    session: { uid: string; login: string; totpVerified: true; iat: number; nonce: string } | null;
+    pre: { uid: string; login: string; iat: number } | null;
+    ip: string;
+    needsLogin?: boolean;
   }
-}
-
-interface Window {
-  __CSRF__?: string;
-  adminToast?: (msg: string, type?: "info" | "success" | "error") => void;
 }

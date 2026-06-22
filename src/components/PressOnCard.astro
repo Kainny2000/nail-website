@@ -1,117 +1,19 @@
 ---
+import type { PressOnPackage } from "../data/press-on";
 import "../styles/components/press-on-card.css";
-import type { PublicPackage } from "../lib/admin/public-queries";
 
-interface Props {
-  pkg: PublicPackage;
-}
-const { pkg } = Astro.props;
-const extraCount = Math.max(0, pkg.gallery.length - 1);
+interface Props extends PressOnPackage {}
+
+const { name, description } = Astro.props;
 ---
 
-<div class="press-on-card" data-package-id={pkg.id} data-package-images={JSON.stringify(pkg.gallery.map((g: { url: string }) => g.url))} data-package-alts={JSON.stringify(pkg.gallery.map((g: { alt: string }) => g.alt))}>
-  <div class="press-on-card-image" data-lightbox-trigger>
-    {pkg.hero ? (
-      <img
-        src={pkg.hero.url}
-        srcset={pkg.hero.srcset}
-        sizes="(max-width: 600px) 100vw, 600px"
-        alt={pkg.hero.alt}
-        width={pkg.hero.width}
-        height={pkg.hero.height}
-        loading="lazy"
-        decoding="async"
-        class="press-on-card-img"
-      />
-    ) : (
-      <div class="press-on-card-placeholder">Sin imagen</div>
-    )}
-    {extraCount > 0 && (
-      <div class="press-on-card-extra">+{extraCount}</div>
-    )}
+<div class="press-on-card">
+  <div class="press-on-card-image">
+    <div class="press-on-card-placeholder">Diseño</div>
+    <div class="press-on-card-sample">Muestra</div>
   </div>
   <div class="press-on-card-body">
-    <h2 class="press-on-card-title">{pkg.name}</h2>
-    <p class="press-on-card-desc">{pkg.description}</p>
-    {pkg.basePrice > 0 && (
-      <div class="press-on-card-price">Desde ${pkg.basePrice}</div>
-    )}
+    <h2 class="press-on-card-title">{name}</h2>
+    <p class="press-on-card-desc">{description}</p>
   </div>
 </div>
-
-<div class="press-on-lightbox" data-lightbox hidden>
-  <button class="press-on-lightbox-close" data-lightbox-close>×</button>
-  <button class="press-on-lightbox-prev" data-lightbox-prev>‹</button>
-  <button class="press-on-lightbox-next" data-lightbox-next>›</button>
-  <div class="press-on-lightbox-image-wrap">
-    <img data-lightbox-img src="" alt="" />
-  </div>
-  <div class="press-on-lightbox-counter" data-lightbox-counter>1 / 1</div>
-</div>
-
-<script>
-  // @ts-nocheck
-  document.addEventListener('click', (e) => {
-    const trigger = e.target.closest('[data-lightbox-trigger]');
-    if (!trigger) return;
-    const card = trigger.closest('[data-package-id]');
-    if (!card) return;
-    const urls = JSON.parse(card.dataset.packageImages || '[]');
-    const alts = JSON.parse(card.dataset.packageAlts || '[]');
-    if (urls.length === 0) return;
-    openLightbox(urls, alts, 0);
-  });
-
-  function openLightbox(urls, alts, idx) {
-    const lb = document.querySelector('.press-on-lightbox[data-lightbox]');
-    if (!lb) return;
-    lb.dataset.urls = JSON.stringify(urls);
-    lb.dataset.alts = JSON.stringify(alts);
-    lb.dataset.idx = String(idx);
-    updateLightbox(lb);
-    lb.hidden = false;
-    document.body.style.overflow = 'hidden';
-  }
-
-  function updateLightbox(lb) {
-    const urls = JSON.parse(lb.dataset.urls || '[]');
-    const alts = JSON.parse(lb.dataset.alts || '[]');
-    const idx = parseInt(lb.dataset.idx || '0');
-    const img = lb.querySelector('[data-lightbox-img]');
-    img.src = urls[idx];
-    img.alt = alts[idx] || '';
-    lb.querySelector('[data-lightbox-counter]').textContent = `${idx + 1} / ${urls.length}`;
-  }
-
-  function closeLightbox() {
-    const lb = document.querySelector('.press-on-lightbox[data-lightbox]');
-    if (lb) lb.hidden = true;
-    document.body.style.overflow = '';
-  }
-
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('[data-lightbox-close]')) closeLightbox();
-    const lb = document.querySelector('.press-on-lightbox[data-lightbox]');
-    if (!lb || lb.hidden) return;
-    if (e.target.closest('[data-lightbox-prev]')) {
-      const urls = JSON.parse(lb.dataset.urls || '[]');
-      const idx = (parseInt(lb.dataset.idx || '0') - 1 + urls.length) % urls.length;
-      lb.dataset.idx = String(idx);
-      updateLightbox(lb);
-    }
-    if (e.target.closest('[data-lightbox-next]')) {
-      const urls = JSON.parse(lb.dataset.urls || '[]');
-      const idx = (parseInt(lb.dataset.idx || '0') + 1) % urls.length;
-      lb.dataset.idx = String(idx);
-      updateLightbox(lb);
-    }
-  });
-
-  document.addEventListener('keydown', (e) => {
-    const lb = document.querySelector('.press-on-lightbox[data-lightbox]');
-    if (!lb || lb.hidden) return;
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowLeft') document.querySelector('[data-lightbox-prev]').click();
-    if (e.key === 'ArrowRight') document.querySelector('[data-lightbox-next]').click();
-  });
-</script>

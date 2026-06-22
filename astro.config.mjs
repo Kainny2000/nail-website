@@ -1,10 +1,11 @@
-// @ts-check
 import { defineConfig } from 'astro/config';
-import node from '@astrojs/node';
+import node from '@astrojs/node'; // Import the Node adapter instead of Cloudflare
 
-// https://astro.build/config
 export default defineConfig({
   output: 'server',
-  adapter: node({ mode: 'standalone' }),
-  server: { host: '127.0.0.1', port: 4321 },
+  adapter: node({
+    mode: 'standalone' // Set mode to standalone for Node.js production use
+  }),
+  server: { host: '127.0.0.1', port: 4321 }
 });
+

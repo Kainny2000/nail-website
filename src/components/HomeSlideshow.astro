@@ -1,38 +1,51 @@
 ---
 import "../styles/components/home-slideshow.css";
-import { getCarouselImages } from "../lib/admin/public-queries";
+import { getManifest, uploadPath } from "../server/lib/storage";
+import fs from "node:fs";
 
-const images = await getCarouselImages();
+let manifest = [];
+try {
+  manifest = await getManifest();
+} catch (err) {
+  console.error("HomeSlideshow: failed to read manifest", err);
+}
+
+const items = manifest
+  .map((m) => {
+    const full = uploadPath(m.filename);
+    if (!fs.existsSync(full)) return null;
+    return { id: m.id, filename: m.filename, alt: m.alt, url: `/api/uploads/${m.filename}` };
+  })
+  .filter(Boolean);
 ---
 
 <div class="home-slideshow">
-    {images.length === 0 ? (
-        <div class="slideshow-empty">
-            <p>El carrusel está vacío. Añade imágenes desde el panel de admin.</p>
-        </div>
-    ) : (
-        <div class="slides-container">
-            {images.map((image, index) => (
-                <div
-                    class={`slide ${index === 0 ? "active" : ""}`}
-                    data-index={index}
-                >
-                    <img
-                        src={image.url}
-                        srcset={image.srcset}
-                        sizes="100vw"
-                        alt={image.alt}
-                        width={image.width}
-                        height={image.height}
-                        loading={index === 0 ? "eager" : "lazy"}
-                        decoding="async"
-                        fetchpriority={index === 0 ? "high" : "auto"}
-                        class="slide-image"
-                    />
+    <div class="slides-container">
+        {
+            items.length === 0 ? (
+                <div class="slide active" data-index="0">
+                    <div class="slide-empty">Próximamente nuevas fotos</div>
                 </div>
-            ))}
-        </div>
-    )}
+            ) : (
+                items.map((item, index) => (
+                    <div
+                        class={`slide ${index === 0 ? "active" : ""}`}
+                        data-index={index}
+                    >
+                        <img
+                            src={item.url}
+                            alt={item.alt}
+                            width="1200"
+                            height="800"
+                            class="slide-image"
+                            loading={index === 0 ? "eager" : "lazy"}
+                            decoding="async"
+                        />
+                    </div>
+                ))
+            )
+        }
+    </div>
     <div class="slideshow-overlay">
         <div class="overlay-content">
             <h1 class="hero-title">Bare Form</h1>
@@ -46,6 +59,7 @@ const images = await getCarouselImages();
     let currentSlide = 0;
 
     function nextSlide() {
+        if (slides.length === 0) return;
         slides[currentSlide].classList.remove("active");
         currentSlide = (currentSlide + 1) % slides.length;
         slides[currentSlide].classList.add("active");
