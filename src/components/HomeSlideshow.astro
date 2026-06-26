@@ -1,22 +1,23 @@
 ---
 import "../styles/components/home-slideshow.css";
-import { getManifest, uploadPath } from "../server/lib/storage";
+import { getManifest, uploadPath, type ManifestItem } from "../server/lib/storage";
 import fs from "node:fs";
 
-let manifest = [];
+let manifest: (ManifestItem & { url: string })[] = [];
 try {
-  manifest = await getManifest();
+  const raw = await getManifest();
+  manifest = raw
+    .map((m) => {
+      const full = uploadPath(m.filename);
+      if (!fs.existsSync(full)) return null;
+      return { ...m, url: `/api/uploads/${m.filename}` };
+    })
+    .filter((x): x is NonNullable<typeof x> => x != null);
 } catch (err) {
   console.error("HomeSlideshow: failed to read manifest", err);
 }
 
-const items = manifest
-  .map((m) => {
-    const full = uploadPath(m.filename);
-    if (!fs.existsSync(full)) return null;
-    return { id: m.id, filename: m.filename, alt: m.alt, url: `/api/uploads/${m.filename}` };
-  })
-  .filter(Boolean);
+const items = manifest;
 ---
 
 <div class="home-slideshow">
