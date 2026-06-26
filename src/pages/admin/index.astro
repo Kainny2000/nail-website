@@ -193,7 +193,7 @@ if (state === "dashboard") {
         <div class="section-checkboxes">
           <label class="section-checkbox"><input type="checkbox" name="upload-sections" value="slideshow" checked /> Slideshow</label>
           <label class="section-checkbox"><input type="checkbox" name="upload-sections" value="gallery" checked /> Gallery</label>
-          <label class="section-checkbox"><input type="checkbox" name="upload-sections" value="presson" /> Press-on</label>
+          <label class="section-checkbox"><input type="checkbox" name="upload-sections" value="presson" checked /> Press-on</label>
         </div>
       </div>
       <div class="form-group">
@@ -232,13 +232,17 @@ if (state === "dashboard") {
 
   <div class="tab-content" id="tab-presson">
     <div class="card">
-      <h3 class="card-header">Create New Card</h3>
+      <h3 class="card-header" id="po-form-header">Create New Card</h3>
       <form id="presson-create-form">
+        <input type="hidden" id="po-edit-id" value="" />
         <div class="form-inline">
           <div class="form-group"><label for="po-name">Card Name</label><input id="po-name" class="form-input" required maxlength="100" placeholder="e.g. Glitter Set" /></div>
           <div class="form-group"><label for="po-price">Price</label><input id="po-price" class="form-input" maxlength="50" placeholder="$25.00" /></div>
           <div class="form-group"><label for="po-description">Description</label><input id="po-description" class="form-input" maxlength="500" placeholder="Short description" /></div>
-          <div class="form-group" style="align-self:flex-end"><button type="submit" class="btn btn-primary">Add Card</button></div>
+          <div class="form-group" style="align-self:flex-end">
+            <button type="submit" class="btn btn-primary" id="po-submit-btn">Add Card</button>
+            <button type="button" class="btn btn-secondary" id="btn-cancel-edit" style="display:none;margin-left:8px">Cancel</button>
+          </div>
         </div>
         <div class="form-group" style="margin-top:12px">
           <label>Card Image (select from uploaded)</label>

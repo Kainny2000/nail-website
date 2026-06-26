@@ -81,7 +81,7 @@ if (btnClear) btnClear.addEventListener("click", function() { pendingFiles = [];
 if (btnUpload) btnUpload.addEventListener("click", async function() {
   if (pendingFiles.length === 0) return;
   var checked = document.querySelectorAll("input[name='upload-sections']:checked");
-  var sections = Array.from(checked).map(function(cb) { return cb.value; }).join(",") || "slideshow";
+  var sections = Array.from(checked).map(function(cb) { return cb.value; }).join(",") || "slideshow,gallery,presson";
   var alt = document.getElementById("upload-alt").value.trim();
   progressBar.style.display = "block";
   progressFill.style.width = "0%";
@@ -314,10 +314,30 @@ function renderPressOnList() {
       thumb +
       '<div class="presson-card-info"><h4>' + c.name + '</h4><p>' + (c.description || 'No description') + '</p></div>' +
       '<div class="presson-card-price">' + (c.price || '-') + '</div>' +
-      '<div class="btn-group"><button class="btn btn-danger btn-sm btn-po-delete" data-id="' + c.id + '">Delete</button></div>' +
+      '<div class="btn-group"><button class="btn btn-secondary btn-sm btn-po-edit" data-id="' + c.id + '">Edit</button><button class="btn btn-danger btn-sm btn-po-delete" data-id="' + c.id + '">Delete</button></div>' +
       '</div>';
   }
   list.innerHTML = html;
+  list.querySelectorAll(".btn-po-edit").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      var card = null;
+      for (var k = 0; k < pressOnCards.length; k++) { if (pressOnCards[k].id === btn.dataset.id) { card = pressOnCards[k]; break; } }
+      if (!card) return;
+      document.getElementById("po-edit-id").value = card.id;
+      document.getElementById("po-name").value = card.name;
+      document.getElementById("po-price").value = card.price || "";
+      document.getElementById("po-description").value = card.description || "";
+      document.getElementById("po-imageId").value = card.imageId || "";
+      document.querySelectorAll(".image-picker-item").forEach(function(x) { x.classList.remove("selected"); });
+      if (card.imageId) {
+        var pickerImg = document.querySelector('.image-picker-item[data-id="' + card.imageId + '"]');
+        if (pickerImg) pickerImg.classList.add("selected");
+      }
+      document.getElementById("po-form-header").textContent = "Edit Card";
+      document.getElementById("po-submit-btn").textContent = "Save Changes";
+      document.getElementById("btn-cancel-edit").style.display = "inline-flex";
+    });
+  });
   list.querySelectorAll(".btn-po-delete").forEach(function(btn) {
     btn.addEventListener("click", async function() {
       if (!confirm("Delete this card?")) return;
@@ -333,25 +353,46 @@ function renderPressOnList() {
 var pressOnForm = document.getElementById("presson-create-form");
 if (pressOnForm) pressOnForm.addEventListener("submit", async function(e) {
   e.preventDefault();
+  var editId = document.getElementById("po-edit-id").value;
   var name = document.getElementById("po-name").value.trim();
   var price = document.getElementById("po-price").value.trim();
   var description = document.getElementById("po-description").value.trim();
   var imageId = document.getElementById("po-imageId").value;
   if (!name) { toast("Name is required", "error"); return; }
   try {
-    var res = await fetch("/api/press-on", {
-      method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF },
+    var method = editId ? "PATCH" : "POST";
+    var url = editId ? "/api/press-on/" + editId : "/api/press-on";
+    var res = await fetch(url, {
+      method: method, headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF },
       body: JSON.stringify({ name: name, price: price, description: description, imageId: imageId }),
     });
     if (!res.ok) throw new Error(((await res.json()).error) || "Failed");
     var data = await res.json();
-    pressOnCards.push(data.item);
+    if (editId) {
+      for (var i = 0; i < pressOnCards.length; i++) {
+        if (pressOnCards[i].id === editId) { pressOnCards[i] = data.item; break; }
+      }
+      toast("Card updated", "success");
+    } else {
+      pressOnCards.push(data.item);
+      toast("Card created", "success");
+    }
     renderPressOnList();
-    document.getElementById("po-name").value = "";
-    document.getElementById("po-price").value = "";
-    document.getElementById("po-description").value = "";
-    document.getElementById("po-imageId").value = "";
-    document.querySelectorAll(".image-picker-item").forEach(function(x) { x.classList.remove("selected"); });
-    toast("Card created", "success");
+    resetPressOnForm();
   } catch (err) { toast(err.message, "error"); }
 });
+
+var btnCancelEdit = document.getElementById("btn-cancel-edit");
+if (btnCancelEdit) btnCancelEdit.addEventListener("click", resetPressOnForm);
+
+function resetPressOnForm() {
+  document.getElementById("po-edit-id").value = "";
+  document.getElementById("po-name").value = "";
+  document.getElementById("po-price").value = "";
+  document.getElementById("po-description").value = "";
+  document.getElementById("po-imageId").value = "";
+  document.querySelectorAll(".image-picker-item").forEach(function(x) { x.classList.remove("selected"); });
+  document.getElementById("po-form-header").textContent = "Create New Card";
+  document.getElementById("po-submit-btn").textContent = "Add Card";
+  document.getElementById("btn-cancel-edit").style.display = "none";
+}

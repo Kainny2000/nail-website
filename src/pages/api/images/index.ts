@@ -84,7 +84,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       ? altParsed.data.sections
       : sectionsRaw && typeof sectionsRaw === "string"
         ? sectionsRaw
-        : "slideshow";
+        : "slideshow,gallery,presson";
     return raw
       .split(",")
       .map((s: string) => s.trim().toLowerCase())

@@ -28,7 +28,7 @@ function migrateItem(item: Record<string, unknown>): ManifestItem {
     filename: String(item.filename ?? ""),
     alt: String(item.alt ?? "Nail Art"),
     addedAt: String(item.addedAt ?? new Date().toISOString()),
-    sections: Array.isArray(item.sections) ? item.sections : ["slideshow"],
+    sections: Array.isArray(item.sections) ? item.sections : ["slideshow", "gallery", "presson"],
   };
 }
 
