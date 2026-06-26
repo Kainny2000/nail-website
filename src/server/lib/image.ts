@@ -10,7 +10,16 @@ const SIG_PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const SIG_WEBP = Buffer.from("RIFF", "ascii");
 const SIG_GIF = Buffer.from("GIF8", "ascii");
 
-function detectFormat(buf) {
+function isHeic(buf: Buffer): boolean {
+  if (buf.length < 12) return false;
+  const ftyp = buf.toString("ascii", 4, 8);
+  if (ftyp !== "ftyp") return false;
+  const brand = buf.toString("ascii", 8, 12).toLowerCase();
+  const heifBrands = ["heic", "heix", "hevc", "hevx", "heim", "heis", "hevm", "mif1", "msf1"];
+  return heifBrands.includes(brand);
+}
+
+function detectFormat(buf: Buffer): string | null {
   if (buf.length < 12) return null;
   if (buf.subarray(0, 3).equals(SIG_JPEG)) return "jpeg";
   if (buf.subarray(0, 8).equals(SIG_PNG)) return "png";
@@ -21,17 +30,18 @@ function detectFormat(buf) {
     return "webp";
   }
   if (buf.subarray(0, 4).equals(SIG_GIF)) return "gif";
+  if (isHeic(buf)) return "heif";
   return null;
 }
 
 export class ImageValidationError extends Error {
-  constructor(message) {
+  constructor(message: string) {
     super(message);
     this.name = "ImageValidationError";
   }
 }
 
-export async function validateAndProcess(buffer) {
+export async function validateAndProcess(buffer: Buffer) {
   if (!Buffer.isBuffer(buffer)) {
     throw new ImageValidationError("Upload must be a binary file");
   }

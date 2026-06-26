@@ -1,19 +1,30 @@
 ---
-import type { PressOnPackage } from "../data/press-on";
 import "../styles/components/press-on-card.css";
 
-interface Props extends PressOnPackage {}
+interface Props {
+  name: string;
+  description: string;
+  price: string;
+  imageUrl: string;
+}
 
-const { name, description } = Astro.props;
+const { name, description, price, imageUrl } = Astro.props;
 ---
 
 <div class="press-on-card">
   <div class="press-on-card-image">
-    <div class="press-on-card-placeholder">Diseño</div>
-    <div class="press-on-card-sample">Muestra</div>
+    {imageUrl ? (
+      <img src={imageUrl} alt={name} class="press-on-card-img" loading="lazy" decoding="async" />
+    ) : (
+      <>
+        <div class="press-on-card-placeholder">Diseno</div>
+        <div class="press-on-card-sample">Muestra</div>
+      </>
+    )}
   </div>
   <div class="press-on-card-body">
     <h2 class="press-on-card-title">{name}</h2>
-    <p class="press-on-card-desc">{description}</p>
+    {description && <p class="press-on-card-desc">{description}</p>}
+    {price && <p class="press-on-card-price">{price}</p>}
   </div>
 </div>

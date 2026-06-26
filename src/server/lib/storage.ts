@@ -8,6 +8,7 @@ export type ManifestItem = {
   filename: string;
   alt: string;
   addedAt: string;
+  sections: string[];
 };
 
 export type Manifest = ManifestItem[];
@@ -21,7 +22,17 @@ async function ensureDirs() {
   await fs.mkdir(PATHS.logs, { recursive: true, mode: 0o700 });
 }
 
-async function readManifestFromDisk() {
+function migrateItem(item: Record<string, unknown>): ManifestItem {
+  return {
+    id: String(item.id ?? ""),
+    filename: String(item.filename ?? ""),
+    alt: String(item.alt ?? "Nail Art"),
+    addedAt: String(item.addedAt ?? new Date().toISOString()),
+    sections: Array.isArray(item.sections) ? item.sections : ["slideshow"],
+  };
+}
+
+async function readManifestFromDisk(): Promise<Manifest> {
   await ensureDirs();
   const file = PATHS.manifest();
   try {
@@ -30,7 +41,7 @@ async function readManifestFromDisk() {
     if (!Array.isArray(parsed)) {
       throw new Error("manifest.json must be a JSON array");
     }
-    for (const item of parsed) {
+    return parsed.map((item) => {
       if (
         typeof item !== "object" ||
         item === null ||
@@ -39,8 +50,8 @@ async function readManifestFromDisk() {
       ) {
         throw new Error("manifest.json has invalid entries");
       }
-    }
-    return parsed as Manifest;
+      return migrateItem(item as Record<string, unknown>);
+    });
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") {
       await fs.writeFile(file, "[]", { mode: 0o600 });
@@ -51,7 +62,7 @@ async function readManifestFromDisk() {
   }
 }
 
-export async function getManifest() {
+export async function getManifest(): Promise<Manifest> {
   const file = PATHS.manifest();
   let stat;
   try {
@@ -66,7 +77,12 @@ export async function getManifest() {
   return cache;
 }
 
-export async function getManifestItem(id: string) {
+export async function getManifestBySection(section: string): Promise<Manifest> {
+  const m = await getManifest();
+  return m.filter((x) => x.sections.includes(section));
+}
+
+export async function getManifestItem(id: string): Promise<ManifestItem | null> {
   const m = await getManifest();
   return m.find((x) => x.id === id) ?? null;
 }
@@ -87,6 +103,20 @@ export async function appendManifestItem(item: ManifestItem) {
   const next = [item, ...m];
   await writeManifest(next);
   return next;
+}
+
+export async function updateManifestItem(
+  id: string,
+  patch: Partial<Pick<ManifestItem, "alt" | "sections">>
+) {
+  const m = await getManifest();
+  const idx = m.findIndex((x) => x.id === id);
+  if (idx === -1) return null;
+  const updated = { ...m[idx], ...patch };
+  const next = [...m];
+  next[idx] = updated;
+  await writeManifest(next);
+  return updated;
 }
 
 export async function removeManifestItem(id: string) {
@@ -114,11 +144,11 @@ export async function reorderManifest(ids: string[]) {
   return next;
 }
 
-export function uploadPath(filename) {
+export function uploadPath(filename: string): string {
   return path.join(PATHS.uploads, filename);
 }
 
-export async function unlinkUpload(filename) {
+export async function unlinkUpload(filename: string) {
   const p = uploadPath(filename);
   try {
     await fs.unlink(p);
@@ -127,7 +157,7 @@ export async function unlinkUpload(filename) {
   }
 }
 
-export function uploadsDirExists() {
+export function uploadsDirExists(): boolean {
   try {
     return fsSync.statSync(PATHS.uploads).isDirectory();
   } catch {

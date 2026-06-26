@@ -1,8 +1,7 @@
 ---
-import { Picture } from "astro:assets";
 import "../styles/components/picture-card.css";
 interface Props {
-  src: any;
+  src: string;
   alt: string;
 }
 
@@ -12,12 +11,11 @@ const { src, alt } = Astro.props;
 <div class="picture-card-wrapper">
   <div class="skeleton-loader"></div>
   <div class="picture-card" onclick="this.classList.toggle('expanded')">
-    <Picture
+    <img
       src={src}
       alt={alt}
-      widths={[400, 800]}
-      sizes="(max-width: 800px) 100vw, 400px"
-      formats={["avif", "webp"]}
+      width="800"
+      height="800"
       loading="lazy"
       decoding="async"
       class="gallery-image"

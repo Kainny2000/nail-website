@@ -1,11 +1,11 @@
 ---
 import "../styles/components/home-slideshow.css";
-import { getManifest, uploadPath, type ManifestItem } from "../server/lib/storage";
+import { getManifestBySection, uploadPath, type ManifestItem } from "../server/lib/storage";
 import fs from "node:fs";
 
 let manifest: (ManifestItem & { url: string })[] = [];
 try {
-  const raw = await getManifest();
+  const raw = await getManifestBySection("slideshow");
   manifest = raw
     .map((m) => {
       const full = uploadPath(m.filename);

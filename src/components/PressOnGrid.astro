@@ -1,17 +1,46 @@
 ---
 import PressOnCard from "./PressOnCard.astro";
-import { pressOnPackages } from "../data/press-on";
 import "../styles/components/press-on-card.css";
+import { getPressOnCards } from "../server/lib/press-on-store";
+import { getManifestItem } from "../server/lib/storage";
+import fs from "node:fs";
+import { uploadPath } from "../server/lib/storage";
+
+const cards = await getPressOnCards();
+const activeCards = cards.filter((c) => c.active).sort((a, b) => a.order - b.order);
+
+const cardsWithImages = await Promise.all(
+  activeCards.map(async (c) => {
+    let imageUrl = "";
+    if (c.imageId) {
+      const img = await getManifestItem(c.imageId);
+      if (img) {
+        const full = uploadPath(img.filename);
+        if (fs.existsSync(full)) {
+          imageUrl = `/api/uploads/${img.filename}`;
+        }
+      }
+    }
+    return { ...c, imageUrl };
+  })
+);
 ---
 
 <div class="press-on-wrapper">
-  <div class="press-on-grid">
-    {pressOnPackages.map((pkg) => (
-      <PressOnCard
-        id={pkg.id}
-        name={pkg.name}
-        description={pkg.description}
-      />
-    ))}
-  </div>
+  {cardsWithImages.length === 0 ? (
+    <div class="empty-state" style="text-align:center;padding:60px 20px;color:#888">
+      <p>No hay diseños disponibles todavía.</p>
+    </div>
+  ) : (
+    <div class="press-on-grid">
+      {cardsWithImages.map((card) => (
+        <PressOnCard
+          name={card.name}
+          description={card.description}
+          price={card.price}
+          imageUrl={card.imageUrl}
+        />
+      ))}
+    </div>
+  )}
 </div>

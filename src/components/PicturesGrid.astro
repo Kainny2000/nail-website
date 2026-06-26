@@ -1,34 +1,35 @@
 ---
 import PictureCard from "./PictureCard.astro";
 import "../styles/components/pictures-grid.css";
-const picturesImported = import.meta.glob("../assets/grid_gallery/*.jpeg", {
-	eager: true,
-}) as Record<string, { default: any }>;
-const sortedKeys = Object.keys(picturesImported).sort((a, b) => {
-	const numA = parseInt(a.match(/\((\d+)\)/)?.[1] || "0");
-	const numB = parseInt(b.match(/\((\d+)\)/)?.[1] || "0");
-	return numA - numB;
-});
+import { getManifestBySection } from "../server/lib/storage";
+import fs from "node:fs";
+import { uploadPath } from "../server/lib/storage";
 
-const uniqueImages = [];
-const seenSources = new Set();
-
-for (const key of sortedKeys) {
-	const img = picturesImported[key];
-	if (!seenSources.has(img.default.src)) {
-		seenSources.add(img.default.src);
-		uniqueImages.push(img);
-	}
+let images: Array<{ url: string; alt: string; id: string }> = [];
+try {
+  const raw = await getManifestBySection("gallery");
+  images = raw
+    .map((m) => {
+      const full = uploadPath(m.filename);
+      if (!fs.existsSync(full)) return null;
+      return { url: `/api/uploads/${m.filename}`, alt: m.alt, id: m.id };
+    })
+    .filter((x): x is NonNullable<typeof x> => x != null);
+} catch (err) {
+  console.error("PicturesGrid: failed to read manifest", err);
 }
-const images = uniqueImages;
 ---
 
 <div class="gallery-wrapper">
-	<div class="pictures-grid">
-		{
-			images.map((image) => (
-				<PictureCard src={image.default} alt="Bare Form Nail Art" />
-			))
-		}
-	</div>
+  {images.length === 0 ? (
+    <div class="empty-state" style="text-align:center;padding:60px 20px;color:#888">
+      <p>No hay fotos en la galería todavía.</p>
+    </div>
+  ) : (
+    <div class="pictures-grid">
+      {images.map((image) => (
+        <PictureCard src={image.url} alt={image.alt} />
+      ))}
+    </div>
+  )}
 </div>

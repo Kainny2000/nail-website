@@ -1,448 +1,262 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import {
-  totpStatus,
-} from "../../server/lib/auth";
-import { getManifest } from "../../server/lib/storage";
-import { randomToken } from "../../server/lib/crypto";
+import "../../styles/admin.css";
+import { verifyCredentials, totpStatus, totpSecret, totpEnroll, newTotpSecret, verifyTotpCode, otpauthUri } from "../../server/lib/auth";
+import { readPreAuth } from "../../server/lib/session";
+import { getEnv } from "../../server/lib/env";
+import QRCode from "qrcode";
 
-const session = Astro.locals.session;
-const pre = Astro.locals.pre;
-const ip = Astro.locals.ip;
+const env = getEnv();
+const cookieHeader = Astro.request.headers.get("cookie") ?? "";
 
-let totpEnrolled = false;
-try {
-  totpEnrolled = await totpStatus();
-} catch (err) {
-  console.error("admin: totp status failed", err);
+let state: "login" | "totp" | "setup" | "dashboard" = "login";
+let loginError = "";
+let totpQr = "";
+let totpSetupSecret = "";
+
+if (Astro.locals.session && Astro.locals.session.uid === "admin") {
+  state = "dashboard";
 }
 
-let manifest = [];
-try {
-  manifest = await getManifest();
-} catch (err) {
-  console.error("admin: manifest read failed", err);
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const action = form.get("_action")?.toString();
+
+  if (action === "login") {
+    const username = form.get("username")?.toString() ?? "";
+    const password = form.get("password")?.toString() ?? "";
+    const user = await verifyCredentials(username, password);
+    if (!user) {
+      loginError = "Invalid credentials";
+      state = "login";
+    } else {
+      const enrolled = await totpStatus();
+      if (enrolled) {
+        const payload = JSON.stringify({ uid: user.uid, login: user.login, iat: Date.now() });
+        const encoded = Buffer.from(payload).toString("base64url");
+        const { hmacSign } = await import("../../server/lib/crypto");
+        const sig = hmacSign(encoded, env.SESSION_SECRET);
+        Astro.cookies.set("__nail_pre", `${encoded}.${sig}`, {
+          path: "/", httpOnly: true, secure: true, sameSite: "lax", maxAge: 5 * 60,
+        });
+        state = "totp";
+      } else {
+        const secret = newTotpSecret();
+        totpSetupSecret = secret;
+        try { totpQr = await QRCode.toDataURL(otpauthUri(secret, username)); } catch { totpQr = ""; }
+        state = "setup";
+      }
+    }
+  } else if (action === "totp-verify") {
+    const token = form.get("token")?.toString() ?? "";
+    const pre = readPreAuth(cookieHeader);
+    if (!pre) {
+      state = "login";
+    } else {
+      const secret = await totpSecret();
+      if (secret && verifyTotpCode(secret, token)) {
+        const payload = JSON.stringify({ uid: pre.uid, login: pre.login, totpVerified: true, iat: Date.now(), nonce: Math.random().toString(36).slice(2) });
+        const encoded = Buffer.from(payload).toString("base64url");
+        const { hmacSign, randomToken } = await import("../../server/lib/crypto");
+        const sig = hmacSign(encoded, env.SESSION_SECRET);
+        Astro.cookies.set("__nail_session", `${encoded}.${sig}`, { path: "/", httpOnly: true, secure: true, sameSite: "lax", maxAge: 60 * 60 });
+        Astro.cookies.set("__nail_csrf", randomToken(24), { path: "/", httpOnly: false, secure: true, sameSite: "lax", maxAge: 60 * 60 });
+        state = "dashboard";
+      } else {
+        loginError = "Invalid TOTP code";
+        state = "totp";
+      }
+    }
+  } else if (action === "totp-setup") {
+    const token = form.get("token")?.toString() ?? "";
+    const secret = form.get("secret")?.toString() ?? "";
+    if (!secret || !verifyTotpCode(secret, token)) {
+      loginError = "Invalid TOTP setup code.";
+      totpSetupSecret = secret;
+      try { totpQr = await QRCode.toDataURL(otpauthUri(secret, "admin")); } catch { totpQr = ""; }
+      state = "setup";
+    } else {
+      await totpEnroll(secret);
+      const payload = JSON.stringify({ uid: "admin", login: "admin", totpVerified: true, iat: Date.now(), nonce: Math.random().toString(36).slice(2) });
+      const encoded = Buffer.from(payload).toString("base64url");
+      const { hmacSign, randomToken } = await import("../../server/lib/crypto");
+      const sig = hmacSign(encoded, env.SESSION_SECRET);
+      Astro.cookies.set("__nail_session", `${encoded}.${sig}`, { path: "/", httpOnly: true, secure: true, sameSite: "lax", maxAge: 60 * 60 });
+      Astro.cookies.set("__nail_csrf", randomToken(24), { path: "/", httpOnly: false, secure: true, sameSite: "lax", maxAge: 60 * 60 });
+      state = "dashboard";
+    }
+  }
 }
 
-let csrfCookie = Astro.cookies.get("__nail_csrf")?.value ?? "";
-if (session && !csrfCookie) {
-  csrfCookie = randomToken(24);
-  Astro.cookies.set("__nail_csrf", csrfCookie, {
-    httpOnly: false,
-    secure: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60,
-  });
+if (state === "dashboard") {
+  let csrf = Astro.cookies.get("__nail_csrf")?.value;
+  if (!csrf) {
+    const crypto = await import("node:crypto");
+    csrf = crypto.randomBytes(32).toString("hex");
+    Astro.cookies.set("__nail_csrf", csrf, { path: "/", httpOnly: false, secure: true, sameSite: "lax", maxAge: 60 * 60 });
+  }
 }
-
-const needsLogin = !session;
-const needsTotp = !!pre && !session;
-const needsTotpSetup = !!session && !totpEnrolled;
-const ready = !!session && totpEnrolled;
 ---
-<Layout title="Admin | Bare Form">
-  <main class="admin-shell">
-    <header class="admin-header">
-      <a href="/" class="admin-home">← Sitio</a>
-      <h1>Admin</h1>
-      {session && (
-        <div class="admin-user">
-          <span>{session.login}</span>
-          <form method="post" action="/api/auth/logout" class="logout-form">
-            <input type="hidden" name="csrf" value={csrfCookie} />
-            <button type="submit" class="btn-secondary">Salir</button>
-          </form>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | Coco Nails</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="admin-body">
+
+{state === "login" && (
+<div class="admin-shell">
+  <div class="card auth-card">
+    <h2 class="card-header">Admin Login</h2>
+    <form method="POST">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" name="username" class="form-input" required autofocus autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" class="form-input" required autocomplete="current-password" />
+      </div>
+      <input type="hidden" name="_action" value="login" />
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:12px">Sign In</button>
+    </form>
+    {loginError && <div class="login-error">{loginError}</div>}
+  </div>
+</div>
+)}
+
+{state === "totp" && (
+<div class="admin-shell">
+  <div class="card auth-card">
+    <h2 class="card-header">Verification Code</h2>
+    <form method="POST">
+      <div class="form-group">
+        <label for="token">6-digit code from authenticator</label>
+        <input id="token" name="token" class="form-input" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code" required autofocus />
+      </div>
+      <input type="hidden" name="_action" value="totp-verify" />
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:12px">Verify</button>
+    </form>
+    {loginError && <div class="login-error">{loginError}</div>}
+  </div>
+</div>
+)}
+
+{state === "setup" && (
+<div class="admin-shell">
+  <div class="card auth-card">
+    <h2 class="card-header">Set Up 2FA</h2>
+    {totpQr && (
+    <div style="text-align:center;margin-bottom:16px">
+      <img src={totpQr} alt="TOTP QR Code" width="200" height="200" />
+      <p style="font-size:0.8rem;color:var(--admin-muted);margin-top:8px">Scan with your authenticator app</p>
+    </div>
+    )}
+    <form method="POST">
+      <input type="hidden" name="secret" value={totpSetupSecret} />
+      <div class="form-group">
+        <label for="token">Enter the 6-digit code to confirm</label>
+        <input id="token" name="token" class="form-input" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code" required autofocus />
+      </div>
+      <input type="hidden" name="_action" value="totp-setup" />
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:12px">Confirm</button>
+    </form>
+    {loginError && <div class="login-error">{loginError}</div>}
+  </div>
+</div>
+)}
+
+{state === "dashboard" && (
+<div class="admin-shell">
+  <div class="admin-header">
+    <h1>Coco Nails Admin</h1>
+    <form method="POST" action="/api/auth/logout" style="margin:0">
+      <button type="submit" class="btn-logout">Logout</button>
+    </form>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-tab="tab-upload">Upload Images</button>
+    <button class="admin-tab" data-tab="tab-manager">Image Manager</button>
+    <button class="admin-tab" data-tab="tab-presson">Press-On Cards</button>
+  </div>
+
+  <div class="tab-content active" id="tab-upload">
+    <div class="card">
+      <h3 class="card-header">Upload Images</h3>
+      <div class="form-group">
+        <label>Assign to sections</label>
+        <div class="section-checkboxes">
+          <label class="section-checkbox"><input type="checkbox" name="upload-sections" value="slideshow" checked /> Slideshow</label>
+          <label class="section-checkbox"><input type="checkbox" name="upload-sections" value="gallery" checked /> Gallery</label>
+          <label class="section-checkbox"><input type="checkbox" name="upload-sections" value="presson" /> Press-on</label>
         </div>
-      )}
-    </header>
+      </div>
+      <div class="form-group">
+        <label for="upload-alt">Alt text (applied to all files)</label>
+        <input id="upload-alt" class="form-input" placeholder="e.g. Pink almond nails" maxlength="200" />
+      </div>
+      <div class="upload-zone" id="upload-zone">
+        <span class="upload-zone-icon">+</span>
+        <p class="upload-zone-text">Drop images here or click to browse</p>
+        <p class="upload-zone-hint">JPEG, PNG, WebP, HEIC (iPhone) — max 8MB each</p>
+        <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple hidden />
+      </div>
+      <div class="upload-preview-list" id="preview-list"></div>
+      <div class="progress-bar" id="progress-bar" style="display:none"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="upload-errors" id="upload-errors"></div>
+      <div style="margin-top:20px">
+        <button class="btn btn-primary" id="btn-upload" disabled>Upload</button>
+        <button class="btn btn-secondary" id="btn-clear-upload" style="margin-left:8px;display:none">Clear</button>
+      </div>
+    </div>
+  </div>
 
-    {needsLogin && (
-      <section class="card">
-        <h2>Iniciar sesión</h2>
-        <form id="login-form" autocomplete="on">
-          <label>Usuario
-            <input name="username" type="text" required autocomplete="username" />
-          </label>
-          <label>Contraseña
-            <input name="password" type="password" required autocomplete="current-password" />
-          </label>
-          <button type="submit" class="btn-primary">Continuar</button>
-          <p class="form-msg" id="login-msg"></p>
-        </form>
-      </section>
-    )}
+  <div class="tab-content" id="tab-manager">
+    <div class="card">
+      <div class="batch-toolbar">
+        <h3 class="card-header" style="margin:0">Image Manager</h3>
+        <div class="batch-actions" id="batch-actions">
+          <span class="batch-count" id="batch-count"></span>
+          <button class="btn btn-secondary btn-sm" id="btn-batch-sections">Set Sections</button>
+          <button class="btn btn-danger btn-sm" id="btn-batch-delete">Delete Selected</button>
+        </div>
+      </div>
+      <div class="image-grid" id="image-grid"><div class="empty-state">Loading...</div></div>
+    </div>
+  </div>
 
-    {needsTotp && (
-      <section class="card">
-        <h2>Código de verificación (2FA)</h2>
-        <form id="totp-form">
-          <label>Código de 6 dígitos
-            <input name="code" type="text" inputmode="numeric" maxlength="8" required autocomplete="one-time-code" />
-          </label>
-          <button type="submit" class="btn-primary">Verificar</button>
-          <p class="form-msg" id="totp-msg"></p>
-        </form>
-      </section>
-    )}
+  <div class="tab-content" id="tab-presson">
+    <div class="card">
+      <h3 class="card-header">Create New Card</h3>
+      <form id="presson-create-form">
+        <div class="form-inline">
+          <div class="form-group"><label for="po-name">Card Name</label><input id="po-name" class="form-input" required maxlength="100" placeholder="e.g. Glitter Set" /></div>
+          <div class="form-group"><label for="po-price">Price</label><input id="po-price" class="form-input" maxlength="50" placeholder="$25.00" /></div>
+          <div class="form-group"><label for="po-description">Description</label><input id="po-description" class="form-input" maxlength="500" placeholder="Short description" /></div>
+          <div class="form-group" style="align-self:flex-end"><button type="submit" class="btn btn-primary">Add Card</button></div>
+        </div>
+        <div class="form-group" style="margin-top:12px">
+          <label>Card Image (select from uploaded)</label>
+          <div class="image-picker" id="po-image-picker"></div>
+          <input type="hidden" id="po-imageId" value="" />
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3 class="card-header">Active Cards</h3>
+      <div class="presson-list" id="presson-list"><div class="empty-state">Loading...</div></div>
+    </div>
+  </div>
+</div>
+)}
 
-    {needsTotpSetup && (
-      <section class="card" id="totp-setup-card">
-        <h2>Configurar 2FA (Authenticator App)</h2>
-        <p class="muted">Escanea el QR con Google Authenticator, 1Password, Authy o Bitwarden, y luego ingresa el código de 6 dígitos para confirmar.</p>
-        <div id="qr-area"><p>Cargando…</p></div>
-        <form id="totp-setup-form" class="hidden">
-          <label>Código de la app
-            <input name="code" type="text" inputmode="numeric" maxlength="8" required />
-          </label>
-          <input type="hidden" name="secret" id="totp-secret-input" />
-          <button type="submit" class="btn-primary">Activar 2FA</button>
-          <p class="form-msg" id="totp-setup-msg"></p>
-        </form>
-      </section>
-    )}
+<div class="toast-container" id="toast-container"></div>
+<script is:inline src="/admin.js"></script>
 
-    {ready && (
-      <>
-        <section class="card">
-          <h2>Subir imagen nueva</h2>
-          <form id="upload-form">
-            <label>Archivo (JPG / PNG / WebP, máx 8 MB)
-              <input name="file" type="file" accept="image/jpeg,image/png,image/webp" required />
-            </label>
-            <label>Texto alternativo (opcional)
-              <input name="alt" type="text" maxlength="200" placeholder="Nail Art" />
-            </label>
-            <button type="submit" class="btn-primary">Subir</button>
-            <p class="form-msg" id="upload-msg"></p>
-          </form>
-          <p class="muted">Las imágenes se redimensionan a 1600 px de ancho y se convierten a WebP en el servidor. Se guardan en disco local; la primera copia de seguridad al repo privado de GitHub se hace automáticamente en 4 horas.</p>
-        </section>
-
-        <section class="card">
-          <h2>Imágenes del slideshow ({manifest.length})</h2>
-          <p class="muted">Arrastra para reordenar. La primera es la imagen principal del slideshow en la página de inicio.</p>
-          <ul id="image-list" class="image-list">
-            {manifest.map((item, idx) => (
-              <li class="image-tile" draggable="true" data-id={item.id}>
-                <span class="image-pos">{idx + 1}</span>
-                <img src={`/api/uploads/${item.filename}`} alt={item.alt} loading="lazy" />
-                <div class="image-meta">
-                  <span class="image-name" title={item.filename}>{item.filename}</span>
-                  <span class="image-date">{new Date(item.addedAt).toLocaleString()}</span>
-                </div>
-                <button class="btn-danger image-delete" data-id={item.id} data-name={item.filename}>Eliminar</button>
-              </li>
-            ))}
-            {manifest.length === 0 && (
-              <li class="empty">No hay imágenes todavía. Sube la primera arriba.</li>
-            )}
-          </ul>
-          <p class="form-msg" id="order-msg"></p>
-        </section>
-      </>
-    )}
-  </main>
-
-  <script is:inline define:vars={{ csrfCookie, needsLogin, needsTotp, needsTotpSetup, ready, ip }}>
-    window.__NAIL__ = { csrfCookie, needsLogin, needsTotp, needsTotpSetup, ready };
-  </script>
-</Layout>
-
-<style>
-  .admin-shell {
-    max-width: 960px;
-    margin: 5rem auto 3rem;
-    padding: 1rem;
-    color: #eee;
-  }
-  .admin-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 2rem;
-  }
-  .admin-header h1 { font-size: 1.5rem; margin: 0; }
-  .admin-home, .admin-user a { color: #fff; opacity: 0.8; }
-  .admin-user { display: flex; align-items: center; gap: 1rem; }
-  .logout-form { margin: 0; }
-  .card {
-    background: #111;
-    border: 1px solid #222;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-  .card h2 { margin-top: 0; font-size: 1.1rem; }
-  label {
-    display: block;
-    margin: 0.75rem 0;
-    font-size: 0.9rem;
-    color: #ccc;
-  }
-  input[type="text"], input[type="password"], input[type="file"] {
-    width: 100%;
-    padding: 0.6rem 0.75rem;
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 6px;
-    color: #fff;
-    margin-top: 0.25rem;
-    box-sizing: border-box;
-    font-family: inherit;
-    font-size: 0.95rem;
-  }
-  input[type="file"] { padding: 0.4rem; }
-  .btn-primary, .btn-secondary, .btn-danger {
-    border: 0;
-    border-radius: 6px;
-    padding: 0.55rem 1rem;
-    cursor: pointer;
-    font-weight: 600;
-    font-family: inherit;
-    font-size: 0.95rem;
-  }
-  .btn-primary { background: #fff; color: #000; }
-  .btn-primary:hover { background: #ddd; }
-  .btn-secondary { background: #333; color: #fff; }
-  .btn-danger { background: #b00; color: #fff; }
-  .btn-danger:hover { background: #d00; }
-  .form-msg { color: #f88; margin: 0.5rem 0 0; min-height: 1.2em; font-size: 0.9rem; }
-  .form-msg.success { color: #8f8; }
-  .muted { color: #888; font-size: 0.85rem; }
-  .hidden { display: none; }
-  .image-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: 0.75rem;
-  }
-  .image-tile {
-    display: grid;
-    grid-template-columns: 2rem 6rem 1fr auto;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem;
-    background: #1a1a1a;
-    border: 1px solid #222;
-    border-radius: 8px;
-    cursor: grab;
-  }
-  .image-tile.dragging { opacity: 0.4; }
-  .image-tile.drag-over { border-color: #fff; }
-  .image-pos { font-weight: 700; text-align: center; }
-  .image-tile img {
-    width: 6rem; height: 4rem;
-    object-fit: cover; border-radius: 4px;
-  }
-  .image-meta { display: flex; flex-direction: column; min-width: 0; }
-  .image-name { font-size: 0.85rem; color: #ccc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .image-date { font-size: 0.75rem; color: #666; }
-  .empty { padding: 1.5rem; text-align: center; color: #666; }
-  #qr-area { display: flex; justify-content: center; padding: 1rem; }
-  #qr-area img { max-width: 240px; background: #fff; padding: 0.5rem; border-radius: 6px; }
-  @media (max-width: 640px) {
-    .image-tile { grid-template-columns: 1.5rem 4rem 1fr; }
-    .image-delete { grid-column: 1 / -1; }
-  }
-</style>
-
-<script>
-  const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => document.querySelectorAll(sel);
-  const csrf = () => window.__NAIL__?.csrfCookie ?? "";
-  const json = async (res) => {
-    if (!res.ok) {
-      let body;
-      try { body = await res.json(); } catch { body = { error: res.statusText }; }
-      throw new Error(body.error || `HTTP ${res.status}`);
-    }
-    return res.json();
-  };
-
-  // LOGIN
-  const loginForm = $("#login-form");
-  if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const msg = $("#login-msg");
-      msg.textContent = "";
-      msg.classList.remove("success");
-      const data = new FormData(loginForm);
-      try {
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: data.get("username"), password: data.get("password") }),
-        });
-        const body = await json(res);
-        if (body.step === "totp") {
-          window.location.reload();
-        } else if (body.step === "totp-setup-required") {
-          window.location.reload();
-        } else {
-          throw new Error("Unexpected response");
-        }
-      } catch (err) {
-        msg.textContent = err.message;
-      }
-    });
-  }
-
-  // TOTP verify
-  const totpForm = $("#totp-form");
-  if (totpForm) {
-    totpForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const msg = $("#totp-msg");
-      msg.textContent = ""; msg.classList.remove("success");
-      const data = new FormData(totpForm);
-      try {
-        const code = data.get("code").replace(/\s+/g, "");
-        await json(await fetch("/api/auth/totp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf() },
-          body: JSON.stringify({ code }),
-        }));
-        window.location.reload();
-      } catch (err) {
-        msg.textContent = err.message;
-      }
-    });
-  }
-
-  // TOTP setup
-  const setupCard = $("#totp-setup-card");
-  if (setupCard) {
-    (async () => {
-      const form = $("#totp-setup-form");
-      const area = $("#qr-area");
-      try {
-        const res = await fetch("/api/auth/setup-totp", { headers: { "X-CSRF-Token": csrf() } });
-        const body = await json(res);
-        area.innerHTML = `<img src="${body.qr}" alt="TOTP QR" /><p class="muted" style="text-align:center;word-break:break-all;">Secret: <code>${body.secret}</code></p>`;
-        $("#totp-secret-input").value = body.secret;
-        form.classList.remove("hidden");
-      } catch (err) {
-        area.innerHTML = `<p class="form-msg">${err.message}</p>`;
-      }
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const msg = $("#totp-setup-msg");
-        msg.textContent = ""; msg.classList.remove("success");
-      const data = new FormData(form);
-      const code = data.get("code").replace(/\s+/g, "");
-      try {
-        await json(await fetch("/api/auth/setup-totp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf() },
-          body: JSON.stringify({ secret: data.get("secret"), code }),
-        }));
-          msg.classList.add("success");
-          msg.textContent = "2FA activado. Recargando…";
-          setTimeout(() => window.location.reload(), 800);
-        } catch (err) {
-          msg.textContent = err.message;
-        }
-      });
-    })();
-  }
-
-  // Upload
-  const uploadForm = $("#upload-form");
-  if (uploadForm) {
-    uploadForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const msg = $("#upload-msg");
-      msg.textContent = "Subiendo…"; msg.classList.remove("success");
-      const data = new FormData(uploadForm);
-      try {
-        await json(await fetch("/api/images", {
-          method: "POST",
-          headers: { "X-CSRF-Token": csrf() },
-          body: data,
-        }));
-        msg.classList.add("success");
-        msg.textContent = "Subido. Recargando…";
-        setTimeout(() => window.location.reload(), 600);
-      } catch (err) {
-        msg.textContent = err.message;
-      }
-    });
-  }
-
-  // Delete
-  $$(".image-delete").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const id = btn.getAttribute("data-id");
-      const name = btn.getAttribute("data-name");
-      if (!confirm(`¿Eliminar ${name}? Esta acción no se puede deshacer.`)) return;
-      try {
-        await json(await fetch(`/api/images/${encodeURIComponent(id)}`, {
-          method: "DELETE",
-          headers: { "X-CSRF-Token": csrf() },
-        }));
-        window.location.reload();
-      } catch (err) {
-        alert(err.message);
-      }
-    });
-  });
-
-  // Drag to reorder
-  const list = $("#image-list");
-  if (list) {
-    let dragId = null;
-    list.querySelectorAll(".image-tile").forEach((tile) => {
-      tile.addEventListener("dragstart", (e) => {
-        dragId = tile.getAttribute("data-id");
-        tile.classList.add("dragging");
-        e.dataTransfer.effectAllowed = "move";
-      });
-      tile.addEventListener("dragend", () => {
-        tile.classList.remove("dragging");
-        list.querySelectorAll(".image-tile").forEach((t) => t.classList.remove("drag-over"));
-      });
-      tile.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = "move";
-        tile.classList.add("drag-over");
-      });
-      tile.addEventListener("dragleave", () => tile.classList.remove("drag-over"));
-      tile.addEventListener("drop", async (e) => {
-        e.preventDefault();
-        tile.classList.remove("drag-over");
-        if (!dragId || dragId === tile.getAttribute("data-id")) return;
-        const dragged = list.querySelector(`[data-id="${dragId}"]`);
-        if (!dragged) return;
-        const rect = tile.getBoundingClientRect();
-        const after = e.clientY > rect.top + rect.height / 2;
-        if (after) tile.after(dragged);
-        else tile.before(dragged);
-        await saveOrder();
-      });
-    });
-
-    async function saveOrder() {
-      const msg = $("#order-msg");
-      msg.textContent = "Guardando orden…"; msg.classList.remove("success");
-      const order = Array.from(list.querySelectorAll(".image-tile")).map((t) => t.getAttribute("data-id"));
-      try {
-        await json(await fetch("/api/images/order", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf() },
-          body: JSON.stringify({ order }),
-        }));
-        msg.classList.add("success");
-        msg.textContent = "Orden guardado.";
-        // refresh position numbers
-        list.querySelectorAll(".image-tile").forEach((t, i) => {
-          t.querySelector(".image-pos").textContent = String(i + 1);
-        });
-      } catch (err) {
-        msg.textContent = err.message;
-      }
-    }
-  }
-</script>
+  </body>
+</html>
