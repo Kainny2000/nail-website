@@ -55,7 +55,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
   if (!verifyTotpCode(body.secret, body.code)) {
     await audit({ kind: "totp-enroll-fail", user: locals.session.login, ip: locals.ip });
-    return new Response(JSON.stringify({ error: "Code did not match" }), {
+    return new Response(JSON.stringify({ error: "Code did not match. Verify your device time is synced and try again." }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });

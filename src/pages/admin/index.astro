@@ -78,7 +78,7 @@ const ready = !!session && totpEnrolled;
         <h2>Código de verificación (2FA)</h2>
         <form id="totp-form">
           <label>Código de 6 dígitos
-            <input name="code" type="text" inputmode="numeric" pattern="\d{6}" maxlength="6" required autocomplete="one-time-code" />
+            <input name="code" type="text" inputmode="numeric" maxlength="8" required autocomplete="one-time-code" />
           </label>
           <button type="submit" class="btn-primary">Verificar</button>
           <p class="form-msg" id="totp-msg"></p>
@@ -93,7 +93,7 @@ const ready = !!session && totpEnrolled;
         <div id="qr-area"><p>Cargando…</p></div>
         <form id="totp-setup-form" class="hidden">
           <label>Código de la app
-            <input name="code" type="text" inputmode="numeric" pattern="\d{6}" maxlength="6" required />
+            <input name="code" type="text" inputmode="numeric" maxlength="8" required />
           </label>
           <input type="hidden" name="secret" id="totp-secret-input" />
           <button type="submit" class="btn-primary">Activar 2FA</button>
@@ -299,10 +299,11 @@ const ready = !!session && totpEnrolled;
       msg.textContent = ""; msg.classList.remove("success");
       const data = new FormData(totpForm);
       try {
+        const code = data.get("code").replace(/\s+/g, "");
         await json(await fetch("/api/auth/totp", {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf() },
-          body: JSON.stringify({ code: data.get("code") }),
+          body: JSON.stringify({ code }),
         }));
         window.location.reload();
       } catch (err) {
@@ -330,13 +331,14 @@ const ready = !!session && totpEnrolled;
         e.preventDefault();
         const msg = $("#totp-setup-msg");
         msg.textContent = ""; msg.classList.remove("success");
-        const data = new FormData(form);
-        try {
-          await json(await fetch("/api/auth/setup-totp", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf() },
-            body: JSON.stringify({ secret: data.get("secret"), code: data.get("code") }),
-          }));
+      const data = new FormData(form);
+      const code = data.get("code").replace(/\s+/g, "");
+      try {
+        await json(await fetch("/api/auth/setup-totp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf() },
+          body: JSON.stringify({ secret: data.get("secret"), code }),
+        }));
           msg.classList.add("success");
           msg.textContent = "2FA activado. Recargando…";
           setTimeout(() => window.location.reload(), 800);
