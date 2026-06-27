@@ -40,6 +40,29 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const method = request.method.toUpperCase();
   const ip = clientIp(request.headers);
 
+  // CSRF Origin Check for non-safe methods (POST, PUT, PATCH, DELETE)
+  // to replace Astro's default checkOrigin which is not proxy-aware.
+  if (MUTATING_METHODS.has(method)) {
+    const origin = request.headers.get("origin");
+    const forwardedProto = request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "");
+    const forwardedHost = request.headers.get("x-forwarded-host") || url.host;
+    const expectedOrigin = `${forwardedProto}://${forwardedHost}`;
+    const isSameOrigin = origin === expectedOrigin;
+
+    const contentType = request.headers.get("content-type");
+    const isFormLike = contentType && (
+      contentType.includes("application/x-www-form-urlencoded") ||
+      contentType.includes("multipart/form-data") ||
+      contentType.includes("text/plain")
+    );
+
+    if (!isSameOrigin && (isFormLike || !contentType)) {
+      return new Response(`Cross-site ${method} form submissions are forbidden`, {
+        status: 403,
+      });
+    }
+  }
+
   // Static assets and the public site are unrestricted.
   const isApi = pathname.startsWith("/api/");
   const isAdmin = pathname.startsWith("/admin");

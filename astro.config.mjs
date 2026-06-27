@@ -6,6 +6,9 @@ export default defineConfig({
   adapter: node({
     mode: 'standalone' // Set mode to standalone for Node.js production use
   }),
-  server: { host: '127.0.0.1', port: 4321 }
+  server: { host: '127.0.0.1', port: 4321 },
+  security: {
+    checkOrigin: false
+  }
 });
 
