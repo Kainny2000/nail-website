@@ -1,6 +1,16 @@
 const CSRF = document.cookie.split("; ").find(r => r.startsWith("__nail_csrf="))?.split("=")[1] ?? "";
 var isTouchDevice = "ontouchstart" in window || (navigator.maxTouchPoints || 0) > 0;
 
+function doLogout() {
+  fetch("/api/auth/logout", {
+    method: "POST",
+    headers: { "X-CSRF-Token": CSRF, "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  }).then(function() {
+    window.location.href = "/admin";
+  });
+}
+
 function toast(msg, type) {
   type = type || "info";
   var c = document.getElementById("toast-container");

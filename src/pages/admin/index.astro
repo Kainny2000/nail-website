@@ -3,6 +3,7 @@ import "../../styles/admin.css";
 import { verifyCredentials, totpStatus, totpSecret, totpEnroll, newTotpSecret, verifyTotpCode, otpauthUri } from "../../server/lib/auth";
 import { readPreAuth } from "../../server/lib/session";
 import { getEnv } from "../../server/lib/env";
+import { constantTimeEqual } from "../../server/lib/crypto";
 import QRCode from "qrcode";
 
 const env = getEnv();
@@ -13,6 +14,13 @@ let loginError = "";
 let totpQr = "";
 let totpSetupSecret = "";
 
+let csrf = Astro.cookies.get("__nail_csrf")?.value;
+if (!csrf) {
+  const crypto = await import("node:crypto");
+  csrf = crypto.randomBytes(32).toString("hex");
+  Astro.cookies.set("__nail_csrf", csrf, { path: "/", httpOnly: false, secure: true, sameSite: "lax", maxAge: 60 * 60 });
+}
+
 if (Astro.locals.session && Astro.locals.session.uid === "admin") {
   state = "dashboard";
 }
@@ -20,8 +28,12 @@ if (Astro.locals.session && Astro.locals.session.uid === "admin") {
 if (Astro.request.method === "POST") {
   const form = await Astro.request.formData();
   const action = form.get("_action")?.toString();
+  const formCsrf = form.get("_csrf")?.toString() ?? "";
+  const cookieCsrf = Astro.cookies.get("__nail_csrf")?.value ?? "";
 
-  if (action === "login") {
+  if (!formCsrf || !cookieCsrf || !constantTimeEqual(formCsrf, cookieCsrf)) {
+    loginError = "Invalid form submission. Please refresh the page and try again.";
+  } else if (action === "login") {
     const username = form.get("username")?.toString() ?? "";
     const password = form.get("password")?.toString() ?? "";
     const user = await verifyCredentials(username, password);
@@ -87,14 +99,7 @@ if (Astro.request.method === "POST") {
   }
 }
 
-if (state === "dashboard") {
-  let csrf = Astro.cookies.get("__nail_csrf")?.value;
-  if (!csrf) {
-    const crypto = await import("node:crypto");
-    csrf = crypto.randomBytes(32).toString("hex");
-    Astro.cookies.set("__nail_csrf", csrf, { path: "/", httpOnly: false, secure: true, sameSite: "lax", maxAge: 60 * 60 });
-  }
-}
+
 ---
 
 <html lang="en">
@@ -121,6 +126,7 @@ if (state === "dashboard") {
         <label for="password">Password</label>
         <input id="password" name="password" type="password" class="form-input" required autocomplete="current-password" />
       </div>
+      <input type="hidden" name="_csrf" value={csrf} />
       <input type="hidden" name="_action" value="login" />
       <button type="submit" class="btn btn-primary" style="width:100%;margin-top:12px">Sign In</button>
     </form>
@@ -138,6 +144,7 @@ if (state === "dashboard") {
         <label for="token">6-digit code from authenticator</label>
         <input id="token" name="token" class="form-input" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code" required autofocus />
       </div>
+      <input type="hidden" name="_csrf" value={csrf} />
       <input type="hidden" name="_action" value="totp-verify" />
       <button type="submit" class="btn btn-primary" style="width:100%;margin-top:12px">Verify</button>
     </form>
@@ -162,6 +169,7 @@ if (state === "dashboard") {
         <label for="token">Enter the 6-digit code to confirm</label>
         <input id="token" name="token" class="form-input" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code" required autofocus />
       </div>
+      <input type="hidden" name="_csrf" value={csrf} />
       <input type="hidden" name="_action" value="totp-setup" />
       <button type="submit" class="btn btn-primary" style="width:100%;margin-top:12px">Confirm</button>
     </form>
@@ -174,9 +182,7 @@ if (state === "dashboard") {
 <div class="admin-shell">
   <div class="admin-header">
     <h1>Coco Nails Admin</h1>
-    <form method="POST" action="/api/auth/logout" style="margin:0">
-      <button type="submit" class="btn-logout">Logout</button>
-    </form>
+<button type="button" class="btn-logout" onclick="doLogout()">Logout</button>
   </div>
 
   <div class="admin-tabs">

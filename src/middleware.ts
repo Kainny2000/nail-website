@@ -42,7 +42,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // CSRF Origin Check for non-safe methods (POST, PUT, PATCH, DELETE)
   // to replace Astro's default checkOrigin which is not proxy-aware.
-  if (MUTATING_METHODS.has(method)) {
+  if (MUTATING_METHODS.has(method) && !pathname.startsWith("/admin")) {
     const origin = request.headers.get("origin");
     const forwardedProto = request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "");
     const forwardedHost = request.headers.get("x-forwarded-host") || url.host;
