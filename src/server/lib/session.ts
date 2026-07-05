@@ -8,13 +8,13 @@ const CSRF_COOKIE_NAME = "__nail_csrf";
 const ONE_HOUR = 60 * 60;
 const PRE_TTL = 5 * 60;
 
-function signValue(value) {
+function signValue(value: string): string {
   const env = getEnv();
   const sig = hmacSign(value, env.SESSION_SECRET);
   return `${value}.${sig}`;
 }
 
-function verifySigned(signed) {
+function verifySigned(signed: string): string | null {
   if (typeof signed !== "string") return null;
   const idx = signed.lastIndexOf(".");
   if (idx < 0) return null;
@@ -31,7 +31,7 @@ function verifySigned(signed) {
   return value;
 }
 
-export function readSession(cookieHeader) {
+export function readSession(cookieHeader: string | null): any {
   if (!cookieHeader) return null;
   const cookies = cookie.parse(cookieHeader);
   const raw = cookies[COOKIE_NAME];
@@ -57,7 +57,7 @@ export function readSession(cookieHeader) {
   return null;
 }
 
-export function issueSession(res, { uid, login }) {
+export function issueSession(res: Response, { uid, login }: { uid: string; login: string }) {
   const payload = {
     uid,
     login,
@@ -72,7 +72,7 @@ export function issueSession(res, { uid, login }) {
     cookie.serialize(COOKIE_NAME, signed, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: "lax" as const,
       path: "/",
       maxAge: ONE_HOUR,
     })
@@ -82,14 +82,14 @@ export function issueSession(res, { uid, login }) {
     cookie.serialize(CSRF_COOKIE_NAME, randomToken(24), {
       httpOnly: false,
       secure: true,
-      sameSite: "lax",
+      sameSite: "lax" as const,
       path: "/",
       maxAge: ONE_HOUR,
     })
   );
 }
 
-export function issuePreAuth(res, { uid, login }) {
+export function issuePreAuth(res: Response, { uid, login }: { uid: string; login: string }) {
   const payload = { uid, login, iat: Date.now() };
   const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
   const signed = signValue(encoded);
@@ -98,14 +98,14 @@ export function issuePreAuth(res, { uid, login }) {
     cookie.serialize(PRE_COOKIE_NAME, signed, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: "lax" as const,
       path: "/",
       maxAge: PRE_TTL,
     })
   );
 }
 
-export function readPreAuth(cookieHeader) {
+export function readPreAuth(cookieHeader: string | null): any {
   if (!cookieHeader) return null;
   const cookies = cookie.parse(cookieHeader);
   const raw = cookies[PRE_COOKIE_NAME];
@@ -130,11 +130,11 @@ export function readPreAuth(cookieHeader) {
   return null;
 }
 
-export function clearAll(res) {
+export function clearAll(res: Response) {
   const opts = {
     httpOnly: true,
     secure: true,
-    sameSite: "lax",
+    sameSite: "lax" as const,
     path: "/",
     maxAge: 0,
   };
@@ -149,11 +149,11 @@ export function clearAll(res) {
   );
 }
 
-export function clearPreAuth(res) {
+export function clearPreAuth(res: Response) {
   const opts = {
     httpOnly: true,
     secure: true,
-    sameSite: "lax",
+    sameSite: "lax" as const,
     path: "/",
     maxAge: 0,
   };
@@ -167,13 +167,13 @@ export function clearPreAuth(res) {
   );
 }
 
-export function readCsrfToken(cookieHeader) {
+export function readCsrfToken(cookieHeader: string | null): string | null {
   if (!cookieHeader) return null;
   const cookies = cookie.parse(cookieHeader);
   return cookies[CSRF_COOKIE_NAME] ?? null;
 }
 
-export function ensureCsrfCookie(response, request) {
+export function ensureCsrfCookie(response: Response, request: Request): string {
   const cookieHeader = request.headers.get("cookie") ?? "";
   const existing = readCsrfToken(cookieHeader);
   if (existing) return existing;
@@ -183,7 +183,7 @@ export function ensureCsrfCookie(response, request) {
     cookie.serialize(CSRF_COOKIE_NAME, token, {
       httpOnly: false,
       secure: true,
-      sameSite: "lax",
+      sameSite: "lax" as const,
       path: "/",
       maxAge: ONE_HOUR,
     })

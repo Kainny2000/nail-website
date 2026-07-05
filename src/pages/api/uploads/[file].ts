@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { PATHS } from "../../../server/lib/paths";
 
-const MIME_BY_EXT = {
+const MIME_BY_EXT: Record<string, string> = {
   ".webp": "image/webp",
   ".png": "image/png",
   ".jpg": "image/jpeg",

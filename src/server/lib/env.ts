@@ -11,9 +11,9 @@ const EnvSchema = z.object({
   TRUSTED_PROXY: z.string().default("127.0.0.1"),
 });
 
-let cached = null;
+let cached: z.infer<typeof EnvSchema> | null = null;
 
-export function getEnv() {
+export function getEnv(): z.infer<typeof EnvSchema> {
   if (cached) return cached;
   const parsed = EnvSchema.safeParse(process.env);
   if (!parsed.success) {
@@ -28,3 +28,4 @@ export function getEnv() {
   cached = parsed.data;
   return cached;
 }
+

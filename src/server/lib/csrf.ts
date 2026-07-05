@@ -1,7 +1,7 @@
 import { readCsrfToken } from "./session";
 import { constantTimeEqual } from "./crypto";
 
-export function verifyCsrf(req, context) {
+export function verifyCsrf(req: Request): boolean {
   if (req.method === "GET" || req.method === "HEAD" || req.method === "OPTIONS") {
     return true;
   }
@@ -12,9 +12,10 @@ export function verifyCsrf(req, context) {
   return constantTimeEqual(cookieToken, headerToken);
 }
 
-export function csrfMismatchResponse() {
+export function csrfMismatchResponse(): Response {
   return new Response(
     JSON.stringify({ error: "CSRF token missing or invalid" }),
     { status: 403, headers: { "Content-Type": "application/json" } }
   );
 }
+

@@ -1,7 +1,7 @@
 import path from "node:path";
 import os from "node:os";
 
-function xdgOrFallback(envName, fallback) {
+function xdgOrFallback(envName: string, fallback: string): string {
   const v = process.env[envName];
   if (v && v.length > 0) return v;
   return fallback;

@@ -1,9 +1,9 @@
 // In-memory token-bucket rate limiter. Good enough for a single-process Node app.
 // Resets on process restart (acceptable; the worst case is a brief spike after restart).
 
-const buckets = new Map();
+const buckets = new Map<string, { count: number; resetAt: number }>();
 
-export function check(key, limit, windowMs) {
+export function check(key: string, limit: number, windowMs: number): { ok: boolean; retryAfter?: number; remaining?: number } {
   const now = Date.now();
   const b = buckets.get(key) ?? { count: 0, resetAt: now + windowMs };
   if (now >= b.resetAt) {
@@ -19,7 +19,7 @@ export function check(key, limit, windowMs) {
   return { ok: true, remaining: limit - b.count };
 }
 
-export function clientIp(headers) {
+export function clientIp(headers: Headers): string {
   // We trust only the local Caddy proxy (TRUSTED_PROXY in env).
   // Since the app is bound to 127.0.0.1, the only client IP we'd see is 127.0.0.1
   // unless someone hits it directly. Use socket remoteAddr when available.

@@ -19,7 +19,7 @@ const SECURITY_HEADERS = {
 
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
-function isMutatingApi(pathname, method) {
+function isMutatingApi(pathname: string, method: string): boolean {
   if (!pathname.startsWith("/api/")) return false;
   if (pathname.startsWith("/api/auth/")) return true;
   if (pathname === "/api/images") return MUTATING_METHODS.has(method);
@@ -27,7 +27,7 @@ function isMutatingApi(pathname, method) {
   return false;
 }
 
-function jsonError(status, message) {
+function jsonError(status: number, message: string): Response {
   return new Response(JSON.stringify({ error: message }), {
     status,
     headers: { "Content-Type": "application/json" },
@@ -111,7 +111,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // CSRF on mutating requests (only after auth so unauth'd 401 wins).
   if (isApi && isMutatingApi(pathname, method)) {
-    if (session && !verifyCsrf(request, context)) {
+    if (session && !verifyCsrf(request)) {
       await audit({ kind: "csrf-fail", route: pathname, ip, user: session.login });
       return jsonError(403, "CSRF token missing or invalid");
     }
