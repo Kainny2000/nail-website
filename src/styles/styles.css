@@ -60,9 +60,11 @@ body {
 .nav-center {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .nav-center a {
@@ -72,6 +74,8 @@ body {
   padding: 0.5rem 1rem;
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .layout {
@@ -88,7 +92,6 @@ body {
 
 .gallery-link {
   /*Make it so that gallery-link and the rest of the links are centered while logo link is still of the left*/
-  display: inline-block;
   text-align: center;
 }
 

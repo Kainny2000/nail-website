@@ -5,25 +5,26 @@
 }
 
 .pictures-grid {
-    column-count: 4;
-    column-gap: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
     width: 100%;
 }
 
 @media (max-width: 1200px) {
     .pictures-grid {
-        column-count: 3;
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
 @media (max-width: 768px) {
     .pictures-grid {
-        column-count: 2;
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 480px) {
     .pictures-grid {
-        column-count: 1;
+        grid-template-columns: 1fr;
     }
 }

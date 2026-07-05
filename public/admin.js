@@ -137,7 +137,7 @@ function updateBatchUI() {
 
 function updateSaveOrderButton() {
   var btn = document.getElementById("btn-save-order");
-  if (btn) btn.style.display = dragOrderChanged ? "inline-flex" : "none";
+  if (btn) btn.disabled = !dragOrderChanged;
 }
 
 var btnSaveOrder = document.getElementById("btn-save-order");
@@ -275,7 +275,7 @@ function renderImageGrid() {
       try {
         var res = await fetch("/api/images/" + img.id, { method: "DELETE", headers: { "X-CSRF-Token": CSRF } });
         if (!res.ok) throw new Error("Failed");
-        allImages.splice(idx, 1); dragOrderChanged = true; updateSaveOrderButton(); renderImageGrid(); toast("Image deleted", "info");
+        allImages.splice(idx, 1); renderImageGrid(); toast("Image deleted", "info");
       } catch (err) { toast("Failed to delete", "error"); }
     });
   });
@@ -442,7 +442,6 @@ if (btnBatchDelete) btnBatchDelete.addEventListener("click", async function() {
     try { await fetch("/api/images/" + selected[i].id, { method: "DELETE", headers: { "X-CSRF-Token": CSRF } }); deleted++; } catch (err) {}
   }
   allImages = allImages.filter(function(i) { return !i.selected; });
-  dragOrderChanged = true; updateSaveOrderButton();
   renderImageGrid();
   toast("Deleted " + deleted + " image" + (deleted > 1 ? "s" : ""), "info");
 });
@@ -472,6 +471,28 @@ if (btnBatchSections) btnBatchSections.addEventListener("click", async function(
 
 var pressOnCards = [];
 var pressOnImages = [];
+var poDragOrderChanged = false;
+
+function updatePoSaveOrderButton() {
+  var btn = document.getElementById("btn-po-save-order");
+  if (btn) btn.disabled = !poDragOrderChanged;
+}
+
+var btnPoSaveOrder = document.getElementById("btn-po-save-order");
+if (btnPoSaveOrder) btnPoSaveOrder.addEventListener("click", async function() {
+  if (!poDragOrderChanged) return;
+  var ids = pressOnCards.map(function(c) { return c.id; });
+  try {
+    var res = await fetch("/api/press-on/order", {
+      method: "PUT", headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF },
+      body: JSON.stringify({ order: ids }),
+    });
+    if (!res.ok) throw new Error("Failed");
+    poDragOrderChanged = false;
+    updatePoSaveOrderButton();
+    toast("Card order saved", "success");
+  } catch (err) { toast("Failed to save card order", "error"); }
+});
 
 async function loadPressOn() {
   try {
@@ -517,7 +538,8 @@ function renderPressOnList() {
       if (pressOnImages[j].id === c.imageId) { img = pressOnImages[j]; break; }
     }
     var thumb = img ? '<img class="presson-card-thumb" src="' + img.url + '" alt="' + c.name + '" />' : '<div class="presson-card-thumb-placeholder">No image</div>';
-    html += '<div class="presson-card-item">' +
+    html += '<div class="presson-card-item" data-idx="' + i + '" draggable="' + (!isTouchDevice) + '">' +
+      '<span class="drag-handle po-drag-handle" data-po-drag-handle="true"></span>' +
       thumb +
       '<div class="presson-card-info"><h4>' + c.name + '</h4><p>' + (c.description || 'No description') + '</p></div>' +
       '<div class="presson-card-price">' + (c.price || '-') + '</div>' +
@@ -525,6 +547,56 @@ function renderPressOnList() {
       '</div>';
   }
   list.innerHTML = html;
+
+  var poDraggedIdx = -1;
+
+  list.querySelectorAll(".presson-card-item").forEach(function(card) {
+    card.addEventListener("click", function(e) {
+      if (e.target.closest(".btn, .po-drag-handle")) return;
+    });
+
+    card.addEventListener("dragstart", function(e) {
+      if (e.target.closest(".btn")) { e.preventDefault(); return; }
+      poDraggedIdx = parseInt(card.dataset.idx);
+      desktopDragging = true;
+      card.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", String(poDraggedIdx));
+    });
+
+    card.addEventListener("dragend", function() {
+      card.classList.remove("dragging");
+      list.querySelectorAll(".presson-card-item").forEach(function(c) { c.classList.remove("drag-over"); });
+      poDraggedIdx = -1;
+      desktopDragging = false;
+      stopAutoScroll();
+    });
+
+    card.addEventListener("dragover", function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      var targetIdx = parseInt(card.dataset.idx);
+      if (targetIdx !== poDraggedIdx) card.classList.add("drag-over");
+    });
+
+    card.addEventListener("dragleave", function() { card.classList.remove("drag-over"); });
+
+    card.addEventListener("drop", function(e) {
+      e.preventDefault();
+      card.classList.remove("drag-over");
+      stopAutoScroll();
+      desktopDragging = false;
+      var targetIdx = parseInt(card.dataset.idx);
+      if (targetIdx === poDraggedIdx || poDraggedIdx === -1) return;
+      var dragged = pressOnCards[poDraggedIdx];
+      pressOnCards.splice(poDraggedIdx, 1);
+      pressOnCards.splice(targetIdx, 0, dragged);
+      poDragOrderChanged = true;
+      updatePoSaveOrderButton();
+      renderPressOnList();
+    });
+  });
+
   list.querySelectorAll(".btn-po-edit").forEach(function(btn) {
     btn.addEventListener("click", function() {
       var card = null;
@@ -555,6 +627,7 @@ function renderPressOnList() {
       } catch (err) { toast("Failed to delete", "error"); }
     });
   });
+  updatePoSaveOrderButton();
 }
 
 var pressOnForm = document.getElementById("presson-create-form");
@@ -603,3 +676,97 @@ function resetPressOnForm() {
   document.getElementById("po-submit-btn").textContent = "Add Card";
   document.getElementById("btn-cancel-edit").style.display = "none";
 }
+
+var poTouchDrag = { timer: null, idx: -1, clone: null, sx: 0, sy: 0, moved: false, active: false };
+
+function initPoTouchDrag() {
+  var list = document.getElementById("presson-list");
+  if (!isTouchDevice || !list) return;
+
+  list.addEventListener("touchstart", function(e) {
+    var card = e.target.closest(".presson-card-item");
+    if (!card || e.target.closest(".btn, .btn-po-edit, .btn-po-delete")) return;
+    var t = e.touches[0];
+    poTouchDrag.idx = parseInt(card.dataset.idx);
+    poTouchDrag.sx = t.clientX;
+    poTouchDrag.sy = t.clientY;
+    poTouchDrag.moved = false;
+    poTouchDrag.active = false;
+    clearTimeout(poTouchDrag.timer);
+    poTouchDrag.timer = setTimeout(function() {
+      poTouchDrag.active = true;
+      card.classList.add("touch-dragging");
+      var rect = card.getBoundingClientRect();
+      var cloneEl = card.cloneNode(true);
+      cloneEl.classList.add("touch-drag-clone");
+      cloneEl.style.position = "fixed";
+      cloneEl.style.left = rect.left + "px";
+      cloneEl.style.top = rect.top + "px";
+      cloneEl.style.width = rect.width + "px";
+      cloneEl.style.zIndex = "9999";
+      cloneEl.style.pointerEvents = "none";
+      cloneEl.style.transition = "none";
+      document.body.appendChild(cloneEl);
+      poTouchDrag.clone = cloneEl;
+    }, 400);
+  }, { passive: true });
+
+  list.addEventListener("touchmove", function(e) {
+    if (!poTouchDrag.active || !poTouchDrag.clone) return;
+    e.preventDefault();
+    var t = e.touches[0];
+    poTouchDrag.moved = true;
+    handleAutoScroll(t.clientY);
+    var w = poTouchDrag.clone.offsetWidth;
+    poTouchDrag.clone.style.left = (t.clientX - w / 2) + "px";
+    poTouchDrag.clone.style.top = (t.clientY - 50) + "px";
+
+    list.querySelectorAll(".presson-card-item").forEach(function(c) { c.classList.remove("touch-drag-over"); });
+    poTouchDrag.clone.style.display = "none";
+    var el = document.elementFromPoint(t.clientX, t.clientY);
+    poTouchDrag.clone.style.display = "";
+    var targetCard = el ? el.closest(".presson-card-item") : null;
+    if (targetCard && parseInt(targetCard.dataset.idx) !== poTouchDrag.idx) {
+      targetCard.classList.add("touch-drag-over");
+    }
+  }, { passive: false });
+
+  list.addEventListener("touchend", function(e) {
+    clearTimeout(poTouchDrag.timer);
+    stopAutoScroll();
+    if (poTouchDrag.clone) { poTouchDrag.clone.remove(); poTouchDrag.clone = null; }
+
+    list.querySelectorAll(".presson-card-item").forEach(function(c) { c.classList.remove("touch-dragging", "touch-drag-over"); });
+
+    if (!poTouchDrag.active || !poTouchDrag.moved) { poTouchDrag.idx = -1; poTouchDrag.active = false; return; }
+
+    var t = e.changedTouches[0];
+    var el = document.elementFromPoint(t.clientX, t.clientY);
+    var targetCard = el ? el.closest(".presson-card-item") : null;
+    var targetIdx = targetCard ? parseInt(targetCard.dataset.idx) : -1;
+
+    if (targetIdx >= 0 && targetIdx !== poTouchDrag.idx) {
+      var item = pressOnCards.splice(poTouchDrag.idx, 1)[0];
+      pressOnCards.splice(targetIdx, 0, item);
+      poDragOrderChanged = true;
+      updatePoSaveOrderButton();
+      renderPressOnList();
+    }
+
+    poTouchDrag.idx = -1;
+    poTouchDrag.active = false;
+    poTouchDrag.moved = false;
+  });
+
+  list.addEventListener("touchcancel", function() {
+    clearTimeout(poTouchDrag.timer);
+    stopAutoScroll();
+    if (poTouchDrag.clone) { poTouchDrag.clone.remove(); poTouchDrag.clone = null; }
+    list.querySelectorAll(".presson-card-item").forEach(function(c) { c.classList.remove("touch-dragging", "touch-drag-over"); });
+    poTouchDrag.idx = -1;
+    poTouchDrag.active = false;
+    poTouchDrag.moved = false;
+  });
+}
+
+initPoTouchDrag();

@@ -73,13 +73,14 @@ export async function getPressOnCard(id: string): Promise<PressOnCard | null> {
 }
 
 export async function createPressOnCard(
-  data: Omit<PressOnCard, "id" | "createdAt" | "updatedAt">
+  data: Omit<PressOnCard, "id" | "createdAt" | "updatedAt" | "order"> & { order?: number }
 ): Promise<PressOnCard> {
   const cards = await getPressOnCards();
   const now = new Date().toISOString();
   const card: PressOnCard = {
     ...data,
     id: crypto.randomUUID().split("-")[0],
+    order: data.order ?? cards.length,
     createdAt: now,
     updatedAt: now,
   };
