@@ -1,4 +1,5 @@
 const CSRF = document.cookie.split("; ").find(r => r.startsWith("__nail_csrf="))?.split("=")[1] ?? "";
+var isTouchDevice = "ontouchstart" in window || (navigator.maxTouchPoints || 0) > 0;
 
 function toast(msg, type) {
   type = type || "info";
@@ -116,9 +117,15 @@ if (btnUpload) btnUpload.addEventListener("click", async function() {
 });
 
 var allImages = [];
+var dragOrderChanged = false;
+var desktopDragging = false;
 var imageGrid = document.getElementById("image-grid");
 var batchActions = document.getElementById("batch-actions");
 var batchCount = document.getElementById("batch-count");
+
+var autoScrollTimer = null;
+var SCROLL_ZONE = 80;
+var SCROLL_MAX_SPEED = 120;
 
 function toggleImageSelection(img, card) { img.selected = !img.selected; card.classList.toggle("selected", img.selected); updateBatchUI(); }
 
@@ -127,6 +134,27 @@ function updateBatchUI() {
   if (batchActions) batchActions.classList.toggle("visible", selected.length > 0);
   if (batchCount) batchCount.textContent = selected.length + " selected";
 }
+
+function updateSaveOrderButton() {
+  var btn = document.getElementById("btn-save-order");
+  if (btn) btn.style.display = dragOrderChanged ? "inline-flex" : "none";
+}
+
+var btnSaveOrder = document.getElementById("btn-save-order");
+if (btnSaveOrder) btnSaveOrder.addEventListener("click", async function() {
+  if (!dragOrderChanged) return;
+  var ids = allImages.map(function(i) { return i.id; });
+  try {
+    var res = await fetch("/api/images/order", {
+      method: "PUT", headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF },
+      body: JSON.stringify({ order: ids }),
+    });
+    if (!res.ok) throw new Error("Failed");
+    dragOrderChanged = false;
+    updateSaveOrderButton();
+    toast("Order saved", "success");
+  } catch (err) { toast("Failed to save order", "error"); }
+});
 
 async function loadImageGrid() {
   if (allImages.length > 0) { renderImageGrid(); return; }
@@ -149,22 +177,68 @@ function renderImageGrid() {
       var on = img.sections.indexOf(s) >= 0;
       return '<span class="section-badge ' + (on ? 'section-badge-on' : 'section-badge-off') + '" data-idx="' + idx + '" data-section="' + s + '">' + s + '</span>';
     }).join("");
-    html += '<div class="image-card ' + (img.selected ? 'selected' : '') + '" data-idx="' + idx + '">' +
+    html += '<div class="image-card ' + (img.selected ? 'selected' : '') + '" data-idx="' + idx + '" draggable="' + (!isTouchDevice) + '">' +
+      '<span class="drag-handle" data-drag-handle="true"></span>' +
       '<img class="image-card-thumb" src="' + img.url + '" alt="' + img.alt + '" loading="lazy" />' +
       '<div class="image-card-body">' +
       '<div class="image-card-name" title="' + img.filename + '">' + img.filename + '</div>' +
       '<div class="image-card-sections">' + barns + '</div>' +
-      '<div class="image-card-actions"><button class="btn btn-secondary btn-sm btn-delete" data-idx="' + idx + '">Delete</button></div>' +
+      '<div class="image-card-actions">' +
+        '<button class="btn btn-secondary btn-sm btn-delete" data-idx="' + idx + '">Delete</button>' +
+      '</div>' +
       '<div class="image-card-alt" data-idx="' + idx + '" title="Click to edit alt text">' + (img.alt || 'Click to edit alt') + '</div>' +
       '</div></div>';
   }
   imageGrid.innerHTML = html;
 
+  var draggedIdx = -1;
+
   imageGrid.querySelectorAll(".image-card").forEach(function(card) {
     card.addEventListener("click", function(e) {
-      if (e.target.closest(".section-badge, .btn, .image-card-alt")) return;
+      if (e.target.closest(".section-badge, .btn, .image-card-alt, .drag-handle")) return;
       var idx = parseInt(card.dataset.idx);
       toggleImageSelection(allImages[idx], card);
+    });
+
+    card.addEventListener("dragstart", function(e) {
+      if (e.target.closest(".section-badge, .btn, .image-card-alt")) { e.preventDefault(); return; }
+      draggedIdx = parseInt(card.dataset.idx);
+      desktopDragging = true;
+      card.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", String(draggedIdx));
+    });
+
+    card.addEventListener("dragend", function() {
+      card.classList.remove("dragging");
+      imageGrid.querySelectorAll(".image-card").forEach(function(c) { c.classList.remove("drag-over"); });
+      draggedIdx = -1;
+      desktopDragging = false;
+      stopAutoScroll();
+    });
+
+    card.addEventListener("dragover", function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      var targetIdx = parseInt(card.dataset.idx);
+      if (targetIdx !== draggedIdx) card.classList.add("drag-over");
+    });
+
+    card.addEventListener("dragleave", function() { card.classList.remove("drag-over"); });
+
+    card.addEventListener("drop", function(e) {
+      e.preventDefault();
+      card.classList.remove("drag-over");
+      stopAutoScroll();
+      desktopDragging = false;
+      var targetIdx = parseInt(card.dataset.idx);
+      if (targetIdx === draggedIdx || draggedIdx === -1) return;
+      var dragged = allImages[draggedIdx];
+      allImages.splice(draggedIdx, 1);
+      allImages.splice(targetIdx, 0, dragged);
+      dragOrderChanged = true;
+      updateSaveOrderButton();
+      renderImageGrid();
     });
   });
 
@@ -201,7 +275,7 @@ function renderImageGrid() {
       try {
         var res = await fetch("/api/images/" + img.id, { method: "DELETE", headers: { "X-CSRF-Token": CSRF } });
         if (!res.ok) throw new Error("Failed");
-        allImages.splice(idx, 1); renderImageGrid(); toast("Image deleted", "info");
+        allImages.splice(idx, 1); dragOrderChanged = true; updateSaveOrderButton(); renderImageGrid(); toast("Image deleted", "info");
       } catch (err) { toast("Failed to delete", "error"); }
     });
   });
@@ -224,7 +298,139 @@ function renderImageGrid() {
     });
   });
   updateBatchUI();
+  updateSaveOrderButton();
 }
+
+function handleAutoScroll(clientY) {
+  var vh = window.innerHeight;
+  var maxScroll = document.documentElement.scrollHeight - vh;
+  if (clientY < SCROLL_ZONE) {
+    var speed = Math.round((SCROLL_ZONE - clientY) / SCROLL_ZONE * SCROLL_MAX_SPEED);
+    startAutoScroll(-speed);
+  } else if (clientY > vh - SCROLL_ZONE) {
+    var speed = Math.round((clientY - (vh - SCROLL_ZONE)) / SCROLL_ZONE * SCROLL_MAX_SPEED);
+    startAutoScroll(speed);
+  } else {
+    stopAutoScroll();
+  }
+}
+
+function startAutoScroll(speed) {
+  if (autoScrollTimer) return;
+  autoScrollTimer = setInterval(function() {
+    window.scrollBy(0, speed);
+  }, 16);
+}
+
+function stopAutoScroll() {
+  if (autoScrollTimer) {
+    clearInterval(autoScrollTimer);
+    autoScrollTimer = null;
+  }
+}
+
+var touchDrag = { timer: null, idx: -1, clone: null, sx: 0, sy: 0, moved: false, active: false };
+
+function initTouchImageDrag() {
+  if (!isTouchDevice || !imageGrid) return;
+
+  imageGrid.addEventListener("touchstart", function(e) {
+    var card = e.target.closest(".image-card");
+    if (!card || e.target.closest(".btn, .section-badge, .image-card-alt")) return;
+    var t = e.touches[0];
+    touchDrag.idx = parseInt(card.dataset.idx);
+    touchDrag.sx = t.clientX;
+    touchDrag.sy = t.clientY;
+    touchDrag.moved = false;
+    touchDrag.active = false;
+    clearTimeout(touchDrag.timer);
+    touchDrag.timer = setTimeout(function() {
+      touchDrag.active = true;
+      card.classList.add("touch-dragging");
+      var rect = card.getBoundingClientRect();
+      var cloneEl = card.cloneNode(true);
+      cloneEl.classList.add("touch-drag-clone");
+      cloneEl.style.position = "fixed";
+      cloneEl.style.left = rect.left + "px";
+      cloneEl.style.top = rect.top + "px";
+      cloneEl.style.width = rect.width + "px";
+      cloneEl.style.zIndex = "9999";
+      cloneEl.style.pointerEvents = "none";
+      cloneEl.style.transition = "none";
+      document.body.appendChild(cloneEl);
+      touchDrag.clone = cloneEl;
+    }, 400);
+  }, { passive: true });
+
+  imageGrid.addEventListener("touchmove", function(e) {
+    if (!touchDrag.active || !touchDrag.clone) return;
+    e.preventDefault();
+    var t = e.touches[0];
+    touchDrag.moved = true;
+    handleAutoScroll(t.clientY);
+    var w = touchDrag.clone.offsetWidth;
+    touchDrag.clone.style.left = (t.clientX - w / 2) + "px";
+    touchDrag.clone.style.top = (t.clientY - 50) + "px";
+
+    imageGrid.querySelectorAll(".image-card").forEach(function(c) { c.classList.remove("touch-drag-over"); });
+    touchDrag.clone.style.display = "none";
+    var el = document.elementFromPoint(t.clientX, t.clientY);
+    touchDrag.clone.style.display = "";
+    var targetCard = el ? el.closest(".image-card") : null;
+    if (targetCard && parseInt(targetCard.dataset.idx) !== touchDrag.idx) {
+      targetCard.classList.add("touch-drag-over");
+    }
+  }, { passive: false });
+
+  imageGrid.addEventListener("touchend", function(e) {
+    clearTimeout(touchDrag.timer);
+    stopAutoScroll();
+    if (touchDrag.clone) { touchDrag.clone.remove(); touchDrag.clone = null; }
+
+    imageGrid.querySelectorAll(".image-card").forEach(function(c) { c.classList.remove("touch-dragging", "touch-drag-over"); });
+
+    if (!touchDrag.active || !touchDrag.moved) { touchDrag.idx = -1; touchDrag.active = false; return; }
+
+    var t = e.changedTouches[0];
+    var el = document.elementFromPoint(t.clientX, t.clientY);
+    var targetCard = el ? el.closest(".image-card") : null;
+    var targetIdx = targetCard ? parseInt(targetCard.dataset.idx) : -1;
+
+    if (targetIdx >= 0 && targetIdx !== touchDrag.idx) {
+      var item = allImages.splice(touchDrag.idx, 1)[0];
+      allImages.splice(targetIdx, 0, item);
+      dragOrderChanged = true;
+      updateSaveOrderButton();
+      renderImageGrid();
+    }
+
+    touchDrag.idx = -1;
+    touchDrag.active = false;
+    touchDrag.moved = false;
+  });
+
+  imageGrid.addEventListener("touchcancel", function() {
+    clearTimeout(touchDrag.timer);
+    stopAutoScroll();
+    if (touchDrag.clone) { touchDrag.clone.remove(); touchDrag.clone = null; }
+    imageGrid.querySelectorAll(".image-card").forEach(function(c) { c.classList.remove("touch-dragging", "touch-drag-over"); });
+    touchDrag.idx = -1;
+    touchDrag.active = false;
+    touchDrag.moved = false;
+  });
+}
+
+initTouchImageDrag();
+
+document.addEventListener("dragover", function(e) {
+  if (!desktopDragging) return;
+  handleAutoScroll(e.clientY);
+});
+
+document.addEventListener("dragend", function() {
+  stopAutoScroll();
+  desktopDragging = false;
+});
 
 var btnBatchDelete = document.getElementById("btn-batch-delete");
 if (btnBatchDelete) btnBatchDelete.addEventListener("click", async function() {
@@ -236,6 +442,7 @@ if (btnBatchDelete) btnBatchDelete.addEventListener("click", async function() {
     try { await fetch("/api/images/" + selected[i].id, { method: "DELETE", headers: { "X-CSRF-Token": CSRF } }); deleted++; } catch (err) {}
   }
   allImages = allImages.filter(function(i) { return !i.selected; });
+  dragOrderChanged = true; updateSaveOrderButton();
   renderImageGrid();
   toast("Deleted " + deleted + " image" + (deleted > 1 ? "s" : ""), "info");
 });

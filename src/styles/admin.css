@@ -326,14 +326,87 @@ body.admin-body {
   border: 1px solid var(--admin-border);
   border-radius: var(--radius);
   overflow: hidden;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, opacity 0.2s, transform 0.15s;
+  position: relative;
+  cursor: grab;
 }
+
+.image-card:active { cursor: grabbing; }
 
 .image-card:hover { border-color: #444; }
 
 .image-card.selected {
   border-color: var(--admin-accent);
 }
+
+.image-card.dragging {
+  opacity: 0.4;
+  border-style: dashed;
+}
+
+.image-card.drag-over {
+  border-color: var(--admin-accent);
+  transform: scale(1.02);
+  box-shadow: 0 0 12px rgba(255,255,255,0.08);
+}
+
+.image-card.touch-dragging {
+  opacity: 0.35;
+  border-style: dashed;
+  border-color: var(--admin-muted);
+}
+
+.image-card.touch-drag-over {
+  border-color: var(--admin-accent);
+  transform: scale(1.03);
+  box-shadow: 0 0 16px rgba(255,255,255,0.12);
+}
+
+.touch-drag-clone {
+  opacity: 0.92;
+  border: 2px solid var(--admin-accent) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  transform: scale(1.05);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--admin-surface);
+  transition: none !important;
+}
+
+.drag-handle {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 20px;
+  height: 20px;
+  z-index: 2;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.drag-handle::before,
+.drag-handle::after {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255,255,255,0.5);
+}
+
+.image-card:hover .drag-handle {
+  opacity: 1;
+}
+
+.drag-handle:hover { cursor: grab; }
+.drag-handle:active { cursor: grabbing; }
 
 .image-card-thumb {
   width: 100%;
@@ -571,14 +644,195 @@ body.admin-body {
 }
 
 @media (max-width: 768px) {
-  .admin-shell { padding: 16px; }
-  .admin-tabs { flex-direction: column; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  .admin-shell { padding: 12px; }
+
+  .admin-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+  }
+
+  .admin-header h1 { font-size: 1.25rem; }
+
+  .admin-tabs {
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 16px;
+  }
+
+  .admin-tab {
+    padding: 12px 16px;
+    font-size: 0.95rem;
+  }
+
+  .card {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .card-header { font-size: 1rem; }
+
+  .form-input, .form-textarea {
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+
+  .btn {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    min-height: 44px;
+  }
+
+  .btn-sm {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    min-height: 40px;
+  }
+
+  .upload-zone {
+    padding: 32px 16px;
+  }
+
+  .upload-zone-icon { font-size: 2rem; }
+  .upload-zone-text { font-size: 0.9rem; }
+  .upload-zone-hint { font-size: 0.75rem; line-height: 1.4; }
+
+  .section-checkboxes {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .section-checkbox {
+    font-size: 1rem;
+    padding: 8px 0;
+  }
+
+  .section-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 10px;
+  }
+
+  .image-card-body { padding: 8px 10px; }
+
+  .image-card-name { font-size: 0.75rem; }
+
+  .image-card-actions {
+    gap: 3px;
+  }
+
+  .image-card-actions .btn {
+    padding: 5px 8px;
+    font-size: 0.72rem;
+    min-height: 34px;
+  }
+
+  .section-badge {
+    font-size: 0.62rem;
+    padding: 3px 7px;
+  }
+
+  .batch-toolbar {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .batch-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .batch-count {
+    width: 100%;
+    font-size: 0.8rem;
+  }
+
   .presson-card-item {
     grid-template-columns: 60px 1fr;
-    grid-template-rows: auto auto;
+    grid-template-rows: auto auto auto;
+    gap: 10px;
+    padding: 10px 12px;
   }
-  .presson-card-price, .presson-card-actions { grid-column: 1 / -1; }
-  .image-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+
+  .presson-card-price {
+    grid-column: 2;
+    font-size: 0.85rem;
+  }
+
+  .presson-card-item .btn-group {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .presson-card-item .btn-group .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .presson-card-thumb {
+    width: 60px;
+    height: 60px;
+  }
+
+  .form-inline {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .form-inline .form-group {
+    min-width: 0;
+  }
+
+  .image-picker {
+    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+    max-height: 160px;
+  }
+
+  .toast-container {
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+  }
+
+  .toast {
+    min-width: 0;
+    width: 100%;
+    font-size: 0.85rem;
+    padding: 14px 18px;
+  }
+
+  .auth-card {
+    margin: 40px auto;
+  }
+
+  .empty-state { padding: 32px 16px; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .drag-handle { display: none; }
+
+  .image-card {
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  .image-card:active { cursor: default; }
+
+  .image-card.dragging {
+    opacity: 1;
+    border-style: solid;
+  }
 }
 
 .tab-content { display: none; }
