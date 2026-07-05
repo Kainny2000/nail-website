@@ -9,7 +9,6 @@ const CreateBody = z.object({
   price: z.string().max(50).default(""),
   imageId: z.string().max(64).default(""),
   active: z.boolean().default(true),
-  order: z.number().int().min(0).default(0),
 });
 
 export const GET: APIRoute = async () => {

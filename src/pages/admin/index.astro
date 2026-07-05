@@ -222,7 +222,7 @@ if (state === "dashboard") {
         <h3 class="card-header" style="margin:0">Image Manager</h3>
         <div class="batch-actions" id="batch-actions">
           <span class="batch-count" id="batch-count"></span>
-          <button class="btn btn-primary btn-sm" id="btn-save-order" style="display:none">Save Order</button>
+          <button class="btn btn-primary btn-sm" id="btn-save-order" disabled>Save Order</button>
           <button class="btn btn-secondary btn-sm" id="btn-batch-sections">Set Sections</button>
           <button class="btn btn-danger btn-sm" id="btn-batch-delete">Delete Selected</button>
         </div>
@@ -253,7 +253,12 @@ if (state === "dashboard") {
       </form>
     </div>
     <div class="card">
-      <h3 class="card-header">Active Cards</h3>
+      <div class="batch-toolbar">
+        <h3 class="card-header" style="margin:0">Active Cards</h3>
+        <div class="batch-actions" id="po-batch-actions">
+          <button class="btn btn-primary btn-sm" id="btn-po-save-order" disabled>Save Order</button>
+        </div>
+      </div>
       <div class="presson-list" id="presson-list"><div class="empty-state">Loading...</div></div>
     </div>
   </div>
