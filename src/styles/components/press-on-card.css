@@ -29,7 +29,8 @@
 }
 
 .press-on-card {
-  background: #111;
+  background: rgba(47, 39, 36, 0.05);
+  border: 1px solid rgba(47, 39, 36, 0.12);
   border-radius: 1rem;
   overflow: hidden;
   cursor: pointer;
@@ -45,7 +46,7 @@
   width: 100%;
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  background: #1a1a1a;
+  background: #EAE9E2;
 }
 
 .press-on-card-placeholder {
@@ -56,7 +57,7 @@
   justify-content: center;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #555;
+  color: #8B8582;
   letter-spacing: 0.05em;
   transition: opacity 0.2s ease;
 }
@@ -69,8 +70,8 @@
   justify-content: center;
   font-size: 1rem;
   font-weight: 400;
-  color: #888;
-  background: linear-gradient(135deg, #1a1a1a 0%, #222 50%, #1a1a1a 100%);
+  color: #8B8582;
+  background: linear-gradient(135deg, #EAE9E2 0%, #DFDED6 50%, #EAE9E2 100%);
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -90,7 +91,7 @@
 .press-on-card-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #fff;
+  color: #2F2724;
   margin-bottom: 0.3rem;
 }
 
@@ -102,13 +103,13 @@
 
 .press-on-card-desc {
   font-size: 0.85rem;
-  color: #888;
+  color: #8B8582;
   line-height: 1.4;
 }
 
 .press-on-card-price {
   font-size: 1rem;
   font-weight: 600;
-  color: #ddd;
+  color: #2F2724;
   margin-top: 0.5rem;
 }

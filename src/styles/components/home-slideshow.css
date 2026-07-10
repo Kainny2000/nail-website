@@ -5,7 +5,7 @@
     overflow: hidden;
     border-radius: 2rem;
     margin-bottom: 3rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
 .slides-container {
@@ -41,8 +41,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-    color: #888;
+    background: linear-gradient(135deg, #D8D6CC 0%, #E8E6DC 100%);
+    color: #8B8582;
     font-size: 1.25rem;
     font-weight: 300;
     letter-spacing: 2px;
@@ -69,7 +69,7 @@
     font-size: 5rem;
     font-weight: 800;
     margin-bottom: 1rem;
-    background: linear-gradient(to bottom, #fff, #888);
+    background: linear-gradient(to bottom, #fff, #ccc);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

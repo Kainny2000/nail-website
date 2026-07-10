@@ -1,9 +1,9 @@
 .site-footer {
-    background: #000;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: #F7F6EE;
+    border-top: 1px solid rgba(47, 39, 36, 0.1);
     padding: 4rem 2rem;
     margin-top: 4rem;
-    color: #888;
+    color: #8B8582;
 }
 
 .footer-content {
@@ -27,11 +27,11 @@
     align-items: center;
     gap: 0.5rem;
     font-size: 1.1rem;
-    color: #fff;
+    color: #2F2724;
 }
 
 .disclaimers {
-    color: #fff;
+    color: #2F2724;
     font-size: 0.9rem;
     font-weight: 600;
 }
