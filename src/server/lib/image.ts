@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import heicDecode from "heic-decode";
 import { randomToken } from "./crypto";
 
 const MAX_BYTES = 8 * 1024 * 1024;
@@ -63,36 +64,72 @@ export async function validateAndProcess(buffer: Buffer) {
     );
   }
 
-  let pipeline;
-  try {
-    pipeline = sharp(buffer, { failOn: "error", limitInputPixels: 50_000_000 });
-  } catch (err) {
-    throw new ImageValidationError(
-      `Image could not be decoded: ${(err as Error).message}`
+  let width: number;
+  let height: number;
+  let pipeline: sharp.Sharp;
+
+  if (fmt === "heif") {
+    let decoded;
+    try {
+      decoded = await heicDecode({ buffer });
+    } catch (err) {
+      throw new ImageValidationError(
+        `Could not decode HEIC image: ${(err as Error).message}`
+      );
+    }
+    width = decoded.width;
+    height = decoded.height;
+    const rawPixels = Buffer.from(
+      decoded.data.buffer,
+      decoded.data.byteOffset,
+      decoded.data.byteLength
     );
+    pipeline = sharp(rawPixels, {
+      raw: { width, height, channels: 4 },
+      failOn: "error",
+      limitInputPixels: 50_000_000,
+    });
+  } else {
+    try {
+      pipeline = sharp(buffer, { failOn: "error", limitInputPixels: 50_000_000 });
+    } catch (err) {
+      throw new ImageValidationError(
+        `Image could not be decoded: ${(err as Error).message}`
+      );
+    }
+
+    let metadata;
+    try {
+      metadata = await pipeline.metadata();
+    } catch (err) {
+      throw new ImageValidationError(
+        `Image metadata unreadable: ${(err as Error).message}`
+      );
+    }
+    width = metadata.width!;
+    height = metadata.height!;
+    if (!width || !height) {
+      throw new ImageValidationError("Image has no dimensions");
+    }
   }
 
-  let metadata;
-  try {
-    metadata = await pipeline.metadata();
-  } catch (err) {
-    throw new ImageValidationError(
-      `Image metadata unreadable: ${(err as Error).message}`
-    );
-  }
-  if (!metadata.width || !metadata.height) {
-    throw new ImageValidationError("Image has no dimensions");
-  }
-  if (metadata.width > 10000 || metadata.height > 10000) {
+  if (width > 10000 || height > 10000) {
     throw new ImageValidationError("Image dimensions too large");
   }
 
-  const webp = await pipeline
-    .rotate()
-    .resize({ width: TARGET_WIDTH, withoutEnlargement: true })
-    .webp({ quality: WEBP_QUALITY, effort: 4 })
-    .toBuffer();
+  let webp;
+  try {
+    webp = await pipeline
+      .rotate()
+      .resize({ width: TARGET_WIDTH, withoutEnlargement: true })
+      .webp({ quality: WEBP_QUALITY, effort: 4 })
+      .toBuffer();
+  } catch (err) {
+    throw new ImageValidationError(
+      `Could not process image: ${(err as Error).message}`
+    );
+  }
 
   const filename = `${randomToken(16)}.webp`;
-  return { buffer: webp, filename, width: metadata.width, height: metadata.height };
+  return { buffer: webp, filename, width, height };
 }
