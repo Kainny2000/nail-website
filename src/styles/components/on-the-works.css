@@ -5,8 +5,8 @@
   max-width: 600px;
   margin: 2rem auto 3rem;
   padding: 1.25rem 1.5rem;
-  background: #111;
-  border: 1px solid #333;
+  background: rgba(47, 39, 36, 0.05);
+  border: 1px solid rgba(47, 39, 36, 0.15);
   border-radius: 1rem;
 }
 
@@ -23,13 +23,13 @@
 .on-the-works-title {
   font-size: 1rem;
   font-weight: 700;
-  color: #fff;
+  color: #2F2724;
   margin-bottom: 0.25rem;
 }
 
 .on-the-works-text {
   font-size: 0.85rem;
-  color: #888;
+  color: #8B8582;
   line-height: 1.5;
   margin: 0;
 }

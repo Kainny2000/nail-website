@@ -1,7 +1,7 @@
 :root {
-  --primary-color: #ffffff;
-  --secondary-color: #ffffff;
-  --shadow-color: rgba(255, 255, 255, 0.2);
+  --primary-color: #F7F6EE;
+  --secondary-color: #F7F6EE;
+  --shadow-color: rgba(0, 0, 0, 0.08);
   --overlay-opacity: 0.8;
   /* Adjusted for overlay effect */
   --font-family: 'Outfit', system-ui, -apple-system, sans-serif;
@@ -15,21 +15,21 @@
 
 body {
   font-family: var(--font-family);
-  background-color: #000;
-  color: #fff;
+  background-color: #F7F6EE;
+  color: #2F2724;
 }
 
 .nav-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(47, 39, 36, 0.92);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   position: fixed;
   top: 0;
   width: 100%;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(247, 246, 238, 0.1);
   z-index: 1000;
 }
 
@@ -49,12 +49,21 @@ body {
   margin-left: 0.5rem;
   display: flex;
   align-items: center;
+  border-radius: 50%;
+  overflow: hidden;
+  width: 50px;
+  height: 50px;
+  margin: 4px;
 }
 
 /* Ensure logo is circular and maintains proper aspect ratio */
 .logo-link img {
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
+  transform: scale(2.2);
+  transform-origin: center center;
 }
 
 .nav-center {
@@ -68,7 +77,7 @@ body {
 }
 
 .nav-center a {
-  color: #000;
+  color: #F7F6EE;
   text-decoration: none;
   font-weight: bold;
   padding: 0.5rem 1rem;

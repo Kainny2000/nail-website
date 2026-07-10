@@ -33,15 +33,15 @@
 }
 
 .gallery-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: rgba(47, 39, 36, 0.04);
+    border: 1px solid rgba(47, 39, 36, 0.15);
+    color: #2F2724;
 }
 
 .services-btn {
-    background: #fff;
-    color: #000;
-    box-shadow: 0 10px 20px rgba(255, 255, 255, 0.1);
+    background: #2F2724;
+    color: #F7F6EE;
+    box-shadow: 0 10px 20px rgba(47, 39, 36, 0.1);
 }
 
 .home-btn:hover {
@@ -49,13 +49,13 @@
 }
 
 .gallery-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(47, 39, 36, 0.08);
+    border-color: rgba(47, 39, 36, 0.25);
 }
 
 .services-btn:hover {
-    background: #e6e6e6;
-    box-shadow: 0 15px 30px rgba(255, 255, 255, 0.15);
+    background: #4A3F3C;
+    box-shadow: 0 15px 30px rgba(47, 39, 36, 0.15);
 }
 
 .btn-icon {
@@ -83,9 +83,9 @@
     margin-top: 6rem;
     padding: 3rem;
     text-align: center;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(47, 39, 36, 0.06);
     border-radius: 2rem;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(47, 39, 36, 0.12);
     max-width: 800px;
     width: 100%;
     animation: fadeInUp 1s ease-out 0.9s both;
@@ -100,15 +100,15 @@
     transform: translateX(-50%);
     width: 60px;
     height: 2px;
-    background: linear-gradient(90deg, transparent, #fff, transparent);
+    background: linear-gradient(90deg, transparent, #2F2724, transparent);
 }
 
 .bio-tagline {
     font-size: 2.5rem;
     font-weight: 800;
     margin-bottom: 1rem;
-    color: #fff;
-    background: linear-gradient(to bottom, #fff, #ccc);
+    color: #2F2724;
+    background: linear-gradient(to bottom, #2F2724, #6B6360);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -116,7 +116,7 @@
 
 .bio-services {
     font-size: 1.2rem;
-    color: #fff;
+    color: #2F2724;
     letter-spacing: 2px;
     text-transform: uppercase;
     font-weight: 600;

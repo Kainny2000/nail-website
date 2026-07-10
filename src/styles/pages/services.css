@@ -1,7 +1,7 @@
 .services-page {
     padding-top: 8rem;
     min-height: 100vh;
-    background: #000;
+    background: #F7F6EE;
 }
 
 .services-header {
@@ -14,7 +14,7 @@
     font-size: 4rem;
     font-weight: 800;
     margin-bottom: 1rem;
-    background: linear-gradient(to bottom, #fff, #666);
+    background: linear-gradient(to bottom, #2F2724, #6B6360);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -22,7 +22,7 @@
 
 .services-header p {
     font-size: 1.2rem;
-    color: #888;
+    color: #8B8582;
     max-width: 600px;
     margin: 0 auto;
 }
